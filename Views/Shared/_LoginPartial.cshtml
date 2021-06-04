@@ -1,0 +1,27 @@
+@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<StockControl.Areas.Identity.Data.StockControlUser> SignInManager
+@inject UserManager<StockControl.Areas.Identity.Data.StockControlUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    if (UserManager.GetUserName(User) == "admin")
+    {
+        Layout = "_Layout";
+
+    }
+    else
+    {
+        Layout = "_Layout2";
+
+    }
+    <h1>WM</h1>
+}
+else
+{
+    <script>
+        window.location.href = '@Url.Action("Redirect", "Home")';
+    </script>
+    
+
+}

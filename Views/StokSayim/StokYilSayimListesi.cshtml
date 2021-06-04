@@ -1,0 +1,47 @@
+﻿@model Sakura.AspNetCore.IPagedList<StockControl.Models.TYillikSayim>
+@using Microsoft.AspNetCore.Http
+@using System.Globalization;
+
+<h2>Yıllık Sayımlar Listesi</h2>
+<form asp-action="StokYilSayimListesi">
+    <input type="text" name="fieldSearchString" value="option2" id="fieldSearchString" hidden />
+    <div class="container">
+        <div class="col-xs-2" style="margin-top:10px"><b>Sayım Yılı:</b></div>
+            <div class="col-xs-3">
+                <input type="text" class="form-control" name="searchString" placeholder="Arama..." />
+            </div>
+            <div class="col-xs-2">
+                <input class="btn btn-success" value="Ara" type="submit" />
+            </div>
+
+        </div>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Sayım Yılı
+            </th>
+            <th>
+                Sayımı Yapan
+            </th>
+            <th>
+                Sayım Tarihi
+            </th>
+            <th>Şube No</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Select(x => new { x.StokDonemiYil, x.KayitKadi, x.KayitTarihi, x.SubeNo }).Distinct())
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.StokDonemiYil)</td>
+                <td>@Html.DisplayFor(modelItem => item.KayitKadi)</td>
+                <td>@Html.DisplayFor(modelItem => item.KayitTarihi)</td>
+                <td>@Html.DisplayFor(modelItem => item.SubeNo)</td>
+                <td> <a asp-action="StokYilSayimDetaylar" asp-route-id="@item.StokDonemiYil" class="btn btn-info">Detaylar</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<pager source="@Model" />

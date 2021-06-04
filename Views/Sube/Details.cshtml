@@ -1,0 +1,90 @@
+﻿@model StockControl.Models.TSubeBilgileri
+
+
+
+
+    <h2>Şube Detaylar</h2>
+
+
+    <h4>Şube Bilgileri</h4>
+    <hr />
+    <div class="container">
+        <div class="form-row">
+            <div class="col-xs-4">
+                <dl class="dl-horizontal">
+
+                    <dt>
+                        Şube No:
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.SubeNo)
+                    </dd>
+                    <dt>
+                        Şube Adı:
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.SubeAdi)
+                    </dd>
+                    <dt>
+                        Ülke:
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Ulke)
+                    </dd>
+                    <dt>
+                        Şehir:
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Sehir)
+                    </dd>
+                    <dt>
+                        Adres:
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Adres)
+                    </dd>
+                    <dt>
+                        Posta Kodu:
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.PostaKodu)
+                    </dd>
+                    <dt>
+                        Tel No:
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.TelNo)
+                    </dd>
+                    <dt>
+                        Email:
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Email)
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-xs-3">
+                <div>
+                    <label class="col-form-label">Kayıt Oluşturan:</label>
+                    @Html.DisplayFor(model => model.KayitKadi)
+                </div>
+                <div>
+                    <label class="col-form-label">Kayıt Değiştiren:</label>
+                    @Html.DisplayFor(model => model.DegKadi)
+                </div>
+                <div>
+                    <label class="col-form-label">Kayıt Tarihi:</label>
+                    @Html.DisplayFor(model => model.KayitTarihi)
+                </div>
+                <div>
+                    <label class="col-form-label">Değiştirme Tarihi:</label>
+                    @Html.DisplayFor(model => model.DegTarihi)
+                </div>
+            </div>
+        </div>
+        </div>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.SubeNo" class="btn btn-success">Düzenle</a>
+            <a asp-controller="Sube" asp-action="SubeListesi" class="btn btn-warning">Şube Listesi</a>
+        </div>
+  

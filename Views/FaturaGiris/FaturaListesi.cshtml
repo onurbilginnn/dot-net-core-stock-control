@@ -1,0 +1,110 @@
+﻿@model Sakura.AspNetCore.IPagedList<StockControl.Models.TFaturaGiris>
+
+@using System.Globalization;
+
+  <h2>Fatura Listesi</h2>
+
+    <div class="container" style="margin-bottom:15px">
+        <div class="col-xs-2">
+            <a asp-action="Create" class="btn btn-primary">Yeni Fatura Ekle</a>
+        </div>
+    </div>
+    <form asp-action="FaturaListesi">
+        <input type="text" name="fieldSearchString" value="option2" id="fieldSearchString" hidden />
+        <div class="container">
+            <div class="col-xs-2">
+                <select type="text" class="form-control" id="select-searchField" onchange="ToController()" placeholder="Arama Alanı seçiniz...">
+
+                    <option value="option2" selected>Fatura No</option>
+                    <option value="option3">Fatura Tarihi</option>
+                    <option value="option4">Tedarikçi Adı</option>
+                </select>
+            </div>
+            <div class="col-xs-3">
+                <input type="text" class="form-control" name="searchString" placeholder="Arama..." />
+            </div>
+            <div class="col-xs-2">
+                <input class="btn btn-success" value="Ara" type="submit" />
+            </div>
+
+        </div>
+    </form>
+    <table class="table">
+        <thead>
+            <tr>
+               
+                <th>
+                    Fatura No
+                </th>
+                <th>
+                    Fatura Tarihi
+                </th>
+                <th>
+                    Tedarikçi Adı
+                </th>
+                <th>
+                    KDV Hariç Toplam
+                </th>
+                <th>
+                    KDV Tutarı
+                </th>
+                <th>
+                    KDV Dahil Toplam
+                </th>
+
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model.Select(x => new { x.SubeNo, x.FaturaNo, x.FaturaTarihi, x.TedarikciAdi }).Distinct())
+            {
+
+                <tr>
+                   
+                    <td class="td-faturaNo">
+                        @Html.DisplayFor(modelItem => item.FaturaNo)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.FaturaTarihi)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.TedarikciAdi)
+                    </td>
+                    <td>
+                        @Model.Where(x => x.FaturaNo == item.FaturaNo).Select(y => y.KdvsizToplam).Sum().ToString("0.00", new CultureInfo("en-US")).Replace("$", "")
+                    </td>
+                    <td>
+                        @Model.Where(x => x.FaturaNo == item.FaturaNo).Select(y => y.KdvTutar).Sum().ToString("0.00", new CultureInfo("en-US")).Replace("$", "")
+                    </td>
+                    <td>
+                        @Model.Where(x => x.FaturaNo == item.FaturaNo).Select(y => y.KdvliToplamTutar).Sum().ToString("0.00", new CultureInfo("en-US")).Replace("$", "")
+                    </td>
+
+
+
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.FaturaNo" class="btn btn-success">Güncelle</a>
+                        <a asp-action="Details" asp-route-id="@item.FaturaNo" class="btn btn-info">Detaylar</a>
+                        <a asp-action="Delete" asp-route-id="@item.FaturaNo" class="btn btn-danger">Sil</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <pager source="@Model" />
+    <script>
+        function findTotals() {
+            var KdvsizToplam = 0;
+            var faturaNo = "";
+            $(".td-faturaNo").each(function () {
+                faturaNo = $(this).text();
+
+            })
+        }
+        function ToController() {
+            $("#fieldSearchString").val($("#select-searchField").val());
+
+        }
+    </script>
+

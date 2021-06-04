@@ -1,0 +1,106 @@
+﻿@model Sakura.AspNetCore.IPagedList<StockControl.Models.TBOM>
+
+
+    <h2>Reçete Listesi</h2>
+
+    <div class="container" style="margin-bottom:15px">
+        <div class="col-xs-2">
+            <a asp-action="BOMEkle" class="btn btn-primary">Yeni Reçete Ekle</a>
+        </div>
+    </div>
+    <form asp-action="BOMListesi">
+        <input type="text" name="fieldSearchString" value="option2" id="fieldSearchString" hidden />
+        <div class="container">
+            <div class="col-xs-2">
+                <select type="text" class="form-control" id="select-searchField" onchange="ToController()" placeholder="Arama Alanı seçiniz...">
+                    <option value="option1">Ürün No</option>
+                    <option value="option2" selected>Ürün Adı</option>
+                    <option value="option3">Kayıt Tarihi</option>
+                </select>
+            </div>
+            <div class="col-xs-3">
+                <input type="text" class="form-control" name="searchString" placeholder="Arama..." />
+            </div>
+            <div class="col-xs-2">
+                <input class="btn btn-success" value="Ara" type="submit" />
+            </div>
+
+        </div>
+    </form>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Ürün No
+                </th>
+                <th>
+                    Ürün Adı
+                </th>
+                <th>
+                    Ürün Seviyesi
+                </th>
+                <th>
+                    Kayıt Tarihi
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Select(x => new { x.SubeNo, x.BaglAraUrunNo, x.BaglAraUrunAdi, x.BaglBitUrunNo, x.BaglBitUrunAdi, x.KayitTarihi }).Distinct())
+            {
+                <tr>
+                    @if (item.BaglAraUrunNo != "")
+                    {
+                        <td>
+                            @Html.DisplayFor(modelItem => item.BaglAraUrunNo)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.BaglAraUrunAdi)
+                        </td>
+                        <td>
+                            2 - Ara Ürün
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.KayitTarihi)
+                        </td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.BaglAraUrunNo" class="btn btn-success">Güncelle</a>
+                            <a asp-action="Details" asp-route-id="@item.BaglAraUrunNo" class="btn btn-info">Detaylar</a>
+                            <a asp-action="Delete" asp-route-id="@item.BaglAraUrunNo" class="btn btn-danger">Sil</a>
+                        </td>
+                    }
+                    else
+                    {
+                        {
+                            <td>
+                                @Html.DisplayFor(modelItem => item.BaglBitUrunNo)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.BaglBitUrunAdi)
+                            </td>
+                            <td>
+                                1 - Bitmiş Ürün
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.KayitTarihi)
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.BaglBitUrunNo" class="btn btn-success">Güncelle</a>
+                                <a asp-action="Details" asp-route-id="@item.BaglBitUrunNo" class="btn btn-info">Detaylar</a>
+                                <a asp-action="Delete" asp-route-id="@item.BaglBitUrunNo" class="btn btn-danger">Sil</a>
+                            </td>
+                        }
+
+                    }
+
+                </tr>
+            }
+        </tbody>
+    </table>
+    <pager />
+    <script>
+        function ToController() {
+            $("#fieldSearchString").val($("#select-searchField").val());
+
+        }
+    </script>

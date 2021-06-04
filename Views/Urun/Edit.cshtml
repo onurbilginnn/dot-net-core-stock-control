@@ -1,0 +1,203 @@
+﻿@model StockControl.Models.TUrunListesi
+
+@using Microsoft.AspNetCore.Http
+
+<form asp-controller="Urun" asp-action="Edit">
+    <div class="container">
+        <div class="form-row">
+            <div class="col-xs-3">
+                <h4>Ürün Güncelleme</h4>
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Şube No:</label>
+                <div>@Model.SubeNo</div>
+                <input asp-for="SubeNo" class="alert-danger form-control hide" readonly />
+            </div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Oluşturan:</label>
+                    <div>@Model.KayitKadi</div>
+                    <input asp-for="KayitKadi" class="alert-danger form-control hide" readonly />
+                </div>
+            </div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Değiştiren:</label>
+                    <div>@Context.Session.GetString("User")</div>
+                    <input asp-for="DegKadi" value="@Context.Session.GetString("User")" class="alert-danger form-control hide" readonly />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-5"></div>
+        <div class="form-row">
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Tarihi:</label>
+                    <div>@Model.KayitTarihi</div>
+                    <input asp-for="KayitTarihi" class="alert-danger form-control hide" readonly />
+                </div>
+                <div class="col-xs-2">
+                    <label class="col-form-label">Değiştirme Tarihi:</label>
+                    <div>@DateTime.Now</div>
+                    <input asp-for="DegTarihi" value="@DateTime.Now" class="alert-danger form-control hide" readonly />
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr />
+
+
+    <input value="edit" name="edit" id="edit" hidden />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="container">
+        <div class="form-row">
+            <div class="col-xs-3">
+                <label for="sube-adi" class="col-form-label">Ürün Adı:</label>
+                <input asp-for="UrunAdi" class="form-control" />
+                <span asp-validation-for="UrunAdi" class="text-danger"></span>
+            </div>
+
+
+            <div class="float-right">
+                <div class="col-xs-3">
+                    <label class="col-form-label">Ürün No:</label>
+                    <input asp-for="UrunNo" class="alert-danger form-control" readonly />
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <label class="col-form-label">Ürün Seviyesi:</label>
+                <input asp-for="UrunSeviyesi" class="alert-danger form-control" readonly />
+                <span asp-validation-for="UrunSeviyesi" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <div class="container">
+        <div class="col-xs-3">
+            <label class="control-label">Alt Kategori:</label><br />
+            <input asp-for="UrunAltKategori" class="form-control" readonly />
+        </div>
+        <div class="col-xs-3">
+            <label class="col-form-label">Kategori:</label>
+            <input asp-for="UrunKategori" class="alert-danger form-control" readonly />
+        </div>
+
+    </div>
+    <hr />
+    <div class="container">
+        <div class="col-xs-3">
+            <label class="col-form-label">Miktar Birimi:</label>
+            <select class="selectpicker" data-dropup-auto="false" data-size="7"
+                    data-live-search="true" title="Seçiniz..." asp-for="MiktarBirimi">
+                <optgroup label="Sayı Birimi">
+                    <option>Adet</option>
+                    <option>Paket</option>
+                    <option>Koli</option>
+                </optgroup>
+                <optgroup label="Ağırlık Birimi">
+                    <option>kg</option>
+                    <option>gram</option>
+                    <option>mg</option>
+                </optgroup>
+                <optgroup label="Sıvı Ağırlık Birimi">
+                    <option>litre</option>
+                    <option>cl</option>
+                    <option>ml</option>
+                </optgroup>
+            </select>
+            <span asp-validation-for="MiktarBirimi" class="text-danger"></span>
+        </div>
+
+        <div class="col-xs-3">
+            <label class="col-form-label">KDV Oranı %:</label>
+            <input asp-for="KdvOrani" class="form-control hide" readonly />
+            <select class="selectpicker" title="Seçiniz..." asp-for="KdvOrani" onchange="changeKDV()">
+                <option>1</option>
+                <option>8</option>
+                <option>18</option>
+            </select>
+            <span asp-validation-for="KdvOrani" class="text-danger"></span>
+        </div>
+    </div>
+    <hr />
+    <div class="container">
+        <div class="col-xs-3">
+        </div>
+        <div class="col-xs-3" style="text-align:right">
+            <input type="submit" value="Kaydet" class="btn btn-primary w-75 text-right" style="margin-top:15px" />
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-3">
+        </div>
+        <div class="col-xs-3" style="text-align:right">
+            <a asp-controller="Urun" asp-action="UrunListesi" class="btn btn-warning" style="margin-top:15px">Ürün Listesi</a>
+        </div>
+    </div>
+</form>
+
+<link rel="stylesheet" href="~/css/bootstrap-select.css" />
+
+@section Scripts
+    {
+
+    <script>
+        function correctPhoneNo() {
+            $("#TelNo").keyup(function () {
+                $(this).val($(this).val().replace(/^(\d{3})(\d{3})(\d)+$/, "($1)$2-$3"));
+            });
+
+            $("#TelNo").keydown(function (e) {
+                var key = e.charCode || e.keyCode || 0;
+                // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                // home, end, period, and numpad decimal
+                return (
+                    key == 8 ||
+                    key == 9 ||
+                    key == 13 ||
+                    key == 46 ||
+                    key == 110 ||
+                    key == 190 ||
+                    (key >= 35 && key <= 40) ||
+                    (key >= 48 && key <= 57) ||
+                    (key >= 96 && key <= 105));
+            });
+        };
+        window.onload(correctPhoneNo());
+    </script>
+    <script src="~/js/jquery1_11_3.min.js"></script>
+    <script src="~/js/bootstrap-select.js"></script>
+    <script>
+
+        function findKDV() {
+            var result = $("input#KdvOrani").val();
+            result = parseInt(result);
+            switch (result) {
+                case 1:
+                    $("select#KdvOrani").val(1);
+                    break;
+                case 8:
+                    $("select#KdvOrani").val(8);
+                    break;
+                case 18:
+                    $("select#KdvOrani").val(18);
+                    break;
+                default:
+                    break;
+            }
+
+        }
+        function changeKDV() {
+            var newResult = $("select#KdvOrani :selected").val();
+            $("input#KdvOrani").val(newResult);
+
+        }
+
+        window.onload(findKDV());
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

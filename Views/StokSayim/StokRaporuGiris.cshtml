@@ -1,0 +1,125 @@
+﻿
+<h3 class="alert alert-danger text-center">Stok Raporu için Tarih Seçiniz...</h3>
+<form>
+    <div class="container">
+        <div class="col-xs-2">
+            <label class="col-form-label">Başlangıç Tarihi:</label>
+            <input id="StokBasTarihi" type="date" class="form-control" />
+        </div>
+
+        <div class="col-xs-2">
+            <label class="control-label">Bitiş Tarihi:</label>
+            <input id="StokBitTarihi" type="date" class="form-control" />
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-2">
+            <div type="submit" style="margin-top:15px" class="btn btn-primary" onclick="SendDate()">Raporla</div>
+        </div>
+    </div>
+</form>
+@section Scripts
+    {
+    <script>
+                function CTRL() {
+                    var returnValue = 0;
+                    var basArr = [];
+                    var bitArr = [];
+                    var today = '@DateTime.Now.ToShortDateString()';
+                    var todayArr = [];
+                    var basTarihi = $("#StokBasTarihi").val();
+                    var bitTarihi = $("#StokBitTarihi").val();
+                    var basValue = 0;
+                    var bitValue = 0;
+                    var todayValue = 0;
+                    todayArr=today.split(".");
+                    basArr = basTarihi.split("-").reverse();
+                    bitArr = bitTarihi.split("-").reverse();
+
+
+                    basArr[0] = parseFloat(basArr[0]);
+                    basArr[1] = parseFloat(basArr[1]) * 30;
+                    basArr[2] = parseFloat(basArr[2]) *365;
+                    for (var i = 0; i <basArr.length; i++) {
+                        basValue += basArr[i];
+                    }
+
+
+                    bitArr[0] = parseFloat(bitArr[0]);
+                    bitArr[1] = parseFloat(bitArr[1]) * 30;
+                    bitArr[2] = parseFloat(bitArr[2]) * 365;
+                    for (var j = 0; j < bitArr.length; j++) {
+                        bitValue += bitArr[j];
+                    }
+
+
+
+                    todayArr[0] = parseFloat(todayArr[0]);
+                    todayArr[1] = parseFloat(todayArr[1]) * 30;
+                    todayArr[2] = parseFloat(todayArr[2]) * 365;
+                    for (var z = 0; z < todayArr.length; z++) {
+                        todayValue += todayArr[z];
+                    }
+                    if (basTarihi == "") {
+                        returnValue = -1;
+                    }
+                    else if (bitTarihi == "") {
+                        returnValue = -2;
+                    }
+                   else if (basValue > bitValue)
+                        returnValue = -3;
+                   else if(basValue>todayValue||bitValue>todayValue)
+                        returnValue = -4;
+
+                   else if (basArr[2] != bitArr[2])
+                        returnValue = -5;
+
+                    return returnValue;
+                }
+
+                function SendDate() {
+                    var sendArr = [];
+
+                    if (CTRL() == -1) {
+                        alert("Başlangıç tarihi giriniz!!!")
+                    }
+                    else if (CTRL() == -2)
+                        alert("Bitiş tarihi giriniz!!!")
+                    else if (CTRL() == -3)
+                        alert("Başlangıç tarihi, bitiş tarihinden büyük olamaz!!!")
+                    else if (CTRL() == -4)
+                        alert("Bugünün tarihinden ileri tarih girilemez!!!")
+                    else if (CTRL() == -5)
+                        alert("Stok raporu aynı yıl içinde hesaplanmalıdır!!!")
+                    else {
+                        sendArr[0] = $("#StokBasTarihi").val();
+                        sendArr[1] = $("#StokBitTarihi").val();
+
+                            $.ajax({
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                },
+                                type: "POST",
+                                url: "/StokSayim/StokRaporuGiris",
+                                contentType: "application/json; charset=utf-8",
+                                data: JSON.stringify(sendArr),
+                                dataType: "text",
+
+                            }).done(function (data) {
+                                if (data == -1) {
+                                    alert("Yıllık stok sayım olmadığından dolayı yıllık stok sayım sayfasına yönlendiriliyorsunuz!!!")
+                                    window.location.href = '/StokSayim/StokYilSayim'
+                                }
+                                else {
+                                    window.location.href = '/StokSayim/StokPeriyodikSayim'
+
+                                }
+                            });
+
+                    }//else
+                }
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

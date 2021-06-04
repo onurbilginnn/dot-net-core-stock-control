@@ -1,0 +1,92 @@
+﻿@model Sakura.AspNetCore.IPagedList<StockControl.Models.TUrunListesi>
+
+@using Microsoft.AspNetCore.Http
+
+<h2>Ürün Listesi</h2>
+
+
+<div class="container" style="margin-bottom:15px">
+    <div class="col-xs-2">
+        <a asp-action="Create" class="btn btn-primary">Yeni Ürün Ekle</a>
+    </div>
+
+</div>
+<form asp-action="UrunListesi">
+    <input type="text" name="fieldSearchString" value="option3" id="fieldSearchString" hidden />
+    <div class="container">
+        <div class="col-xs-2">
+            <select type="text" class="form-control" id="select-searchField" onchange="ToController()" placeholder="Arama Alanı seçiniz...">
+
+                <option value="option2">Ürün No</option>
+                <option value="option3" selected>Ürün Adı</option>
+                <option value="option4">Ürün Kategorisi</option>
+                <option value="option5">Ürün Seviyesi</option>
+            </select>
+        </div>
+        <div class="col-xs-3">
+            <input type="text" class="form-control" name="searchString" placeholder="Arama..." />
+        </div>
+        <div class="col-xs-2">
+            <input class="btn btn-success" value="Ara" type="submit" />
+        </div>
+
+    </div>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Şube No
+            </th>
+            <th>
+                Ürün No
+            </th>
+            <th>
+                Ürün Adı
+            </th>
+            <th>
+                Ürün Kategorisi
+            </th>
+            <th>
+                Ürün Seviyesi
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SubeNo)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UrunNo)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UrunAdi)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UrunKategori)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.UrunSeviyesi)
+                </td>
+                <td>
+                    <a asp-action="Edit" class="btn btn-success" asp-route-id="@item.UrunNo">Güncelle</a>
+                    <a asp-action="Details" class="btn btn-info" asp-route-id="@item.UrunNo">Detaylar</a>
+                    <a asp-action="Delete" class="btn btn-danger" asp-route-id="@item.UrunNo">Sil</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<pager />
+
+<script>
+    function ToController() {
+        $("#fieldSearchString").val($("#select-searchField").val());
+
+    }
+</script>

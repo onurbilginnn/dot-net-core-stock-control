@@ -1,0 +1,925 @@
+﻿@model StockControl.Models.TUrunListesi[]
+
+
+@using Microsoft.AspNetCore.Http;
+
+
+
+
+    <style>
+
+
+        .card2 {
+            min-width: 100%;
+            min-height: 250px;
+            overflow-x: auto;
+            overflow-y: auto;
+            display: flex;
+        }
+
+
+        .card2--content-small {
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .card2--content-med {
+            min-width: 175px;
+            text-align: center;
+        }
+
+        .card2--content-large {
+            min-width: 300px;
+            text-align: center;
+        }
+    </style>
+    <form>
+        <div class="container">
+            <div class="form-row">
+                <div class="col-xs-3">
+                    <h4>Fatura Güncelleme</h4>
+                </div>
+                <div class="col-xs-2">
+                    <label class="col-form-label">Şube No:</label>
+                    <div id="SubeNoEnter">@Context.Session.GetString("SubeNo")</div>
+                </div>
+                <div class="float-right">
+                    <div class="col-xs-2">
+                        <label class="col-form-label">Kayıt Oluşturan:</label>
+                        <div id="input-kayitOlusturan"></div>
+                    </div>
+                </div>
+                <div class="float-right">
+                    <div class="col-xs-2">
+                        <label class="col-form-label">Kayıt Değiştiren:</label>
+                        <div id="input-kayitDegistiren">@Context.Session.GetString("User")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="col-xs-5"></div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label ">Kayıt Tarihi:</label>
+                    <div class="KayitTarihi"></div>
+                </div>
+                <div class="col-xs-2">
+                    <label class="col-form-label ">Değiştirme Tarihi:</label>
+                    <div class="DegTarihi">@DateTime.Now</div>
+                </div>
+            </div>
+            <hr />
+            <div class="text-danger"></div>
+            <div class="container">
+
+
+            </div>
+
+        </div>
+        <div class="container">
+
+            <div class="form-row">
+                <div class="col-xs-3">
+                    <label class="control-label">Fatura No:</label>
+                    <div class="input-group">
+                        <input id="input-faturaSeriNo" class="form-control" style="width:75px" placeholder="Seri No" onblur="goToUpperCase()" onchange="copyToTable()" />
+                        <span class="input-group-addon">-</span>
+                        <input id="input-faturaNo" class="form-control" placeholder="Fatura No" onchange="copyToTable()" />
+                    </div>
+                    <label class="col-form-label">İrsaliye No:</label>
+                    <input id="IrsaliyeNoEnter" class="form-control" onchange="copyToTable()" />
+                </div>
+                <div class="col-xs-2">
+                    <label class="col-form-label">Fatura Tarihi:</label>
+                    <input id="FaturaTarihiEnter" type="date" class="form-control" onchange="copyToTable()" />
+                    <label class="control-label">İrsaliye Tarihi:</label>
+                    <input id="IrsaliyeTarihiEnter" type="date" class="form-control" onchange="copyToTable()" />
+                </div>
+                <div class="col-xs-4">
+                    <table class="table" style="margin-top:25px" id="table-total">
+                        <tbody>
+                            <tr>
+                                <td class="col-xs-3">KDV Hariç Toplam:</td>
+                                <td class="col-xs-1"><b><span id="input-KDVHaricTutar" readonly></span></b></td>
+                            </tr>
+                            <tr>
+                                <td class="col-xs-3">KDV Tutarı:</td>
+                                <td class="col-xs-1"><b><span id="input-toplamKDVTutar" readonly></span></b></td>
+                            </tr>
+                            <tr>
+                                <td class="col-xs-3">KDV Dahil Toplam:</td>
+                                <td class="col-xs-1"><b><span id="input-KDVDahilTutar" readonly></span></b></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+            <div class="col-xs-10">
+                <label class="control-label">Tedarikçi Adı:</label>
+                <input id="TedarikciAdiEnter" type="text" class="form-control" onchange="copyToTable()" />
+                <span class="text-danger" id="span-TedarikciAdiEnter"></span>
+            </div>
+        </div> <hr />
+
+        <table class="table table-bordered " id="table-info" style="text-align:center">
+            <thead>
+                <tr>
+                    <th class="card2--content-small hidden ">
+                        <label class="control-label">Kayıt Tarihi:</label>
+                    </th>
+                    <th class="card2--content-small  hidden">
+                        <label class="control-label">Değiştirme Tarihi:</label>
+                    </th>
+                    <th class="card2--content-small hidden">
+                        <label class="control-label">Şube No:</label>
+                    </th>
+                    <th class="card2--content-small hidden ">
+                        <label class="control-label">Fat No:</label>
+                    </th>
+                    <th class="card2--content-small hidden">
+                        <label class="control-label">Fat Tar:</label>
+                    </th>
+                    <th class="card2--content-small hidden ">
+                        <label class="control-label">Ir No:</label>
+                    </th>
+                    <th class="card2--content-small  hidden">
+                        <label class="control-label">Ir Tar:</label>
+                    </th>
+                    <th class="card2--content-small">
+                        <label class="control-label">Sıra:</label>
+                    </th>
+                    <th class="card2--content-med">
+                        <label class="control-label">Ürün Adı:</label>
+                    </th>
+                    <th class="card2--content-med">
+                        <label class="col-form-label">Ürün No:</label>
+                    </th>
+                    <th class="card2--content-large hidden ">
+                        <label class="control-label">Tedarikçi Adı:</label>
+                    </th>
+                    <th class="card2--content-med">
+                        <label class="control-label">Miktar:</label>
+                    </th>
+                    <th class="card2--content-small">
+                        <label class="control-label">Birim:</label>
+                    </th>
+                    <th class="card2--content-med">
+                        <label class="control-label">Br.Fiyat:</label>
+                    </th>
+                    <th class="card2--content-small">
+                        <label class="control-label">Kur:</label>
+                    </th>
+                    <th class="card2--content-small">
+                        <label class="control-label">% KDV:</label>
+                    </th>
+                    <th class="card2--content-med">
+                        <label class="control-label">Alt Kategori:</label>
+                    </th>
+                    <th class="card2--content-med">
+                        <label class="control-label">Kategori:</label>
+                    </th>
+                    <th class="card2--content-med hidden ">
+                        <label class="control-label">KDVSİZ</label>
+                    </th>
+                    <th class="card2--content-med hidden">
+                        <label class="control-label">KDV:</label>
+                    </th>
+                    <th class="card2--content-med hidden ">
+                        <label class="control-label">KDVLİ:</label>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td class="col-xs-3  hidden">
+                        <div class="KayitTarihi"></div>
+                    </td>
+                    <td class="col-xs-3  hidden">
+                        <div class="DegTarihi">@DateTime.Now</div>
+                    </td>
+                    <td class="col-xs-3 hidden">
+                        <input class="form-control SubeNo" id="input-subeNo" readonly />
+                    </td>
+                    <td class="col-xs-3 hidden">
+                        <input class="alert-danger form-control FaturaNo" readonly />
+                    </td>
+                    <td class="col-xs-3 hidden ">
+                        <input class="alert-danger form-control FaturaTarihi" readonly />
+                    </td>
+                    <td class="col-xs-3 hidden ">
+                        <input class="alert-danger form-control IrsaliyeNo" readonly />
+                    </td>
+                    <td class="col-xs-3  hidden">
+                        <input class="alert-danger form-control IrsaliyeTarihi" readonly />
+                    </td>
+                    <td class="col-xs-3">
+                        <input id="input-siraNo" class="alert-danger form-control" value="1" readonly />
+                    </td>
+                    <td class="col-xs-3">
+                        <input class="form-control UrunAdi"
+                               onchange="findRelated(this)" />
+                        <span class="text-danger span-UrunAdi"></span>
+                    </td>
+                    <td class="col-xs-3">
+                        <input class="alert-danger form-control UrunNo" readonly />
+                    </td>
+                    <td class="col-xs-3 hidden">
+                        <input class="alert-danger form-control TedarikciAdi" readonly />
+                    </td>
+                    <td class="col-xs-3">
+                        <input class="form-control UrunMiktari" onblur=" calculateTotal()" onchange="calculateAmount(this)" />
+                    </td>
+                    <td class="col-xs-3">
+                        <input class="alert-danger form-control MiktarBirimi" readonly />
+                    </td>
+                    <td class="col-xs-3">
+                        <input class="form-control BirimFiyatı" onblur=" calculateTotal()" onchange="calculateAmount(this)" />
+                    </td>
+                    <td class="col-xs-3">
+                        <div class="FiyatKurTipi">TL</div>
+                    </td>
+                    <td class="col-xs-3">
+                        <input class="alert-danger form-control KdvYuzde" onchange="calculateAmount(this)" readonly />
+                    </td>
+                    <td class="col-xs-3">
+                        <input class="alert-danger form-control UrunAltKategori" readonly />
+                    </td>
+                    <td class="col-xs-3">
+                        <input class="alert-danger form-control UrunKategori" readonly />
+                    </td>
+                    <td class="col-xs-3 hidden">
+                        <input class="form-control KdvsizToplam" readonly />
+                    </td>
+                    <td class="col-xs-3 hidden">
+                        <input class="form-control KdvTutar" readonly />
+                    </td>
+                    <td class="col-xs-3 hidden">
+                        <input class="form-control KdvliToplamTutar" readonly />
+                    </td>
+                    <td class="col-xs-3">
+                        <div id="div-newRow" class="btn btn-success">Yeni Satır</div>
+                    </td>
+                </tr>
+
+                @for (int i = 0; i < 29; i++)
+                {
+                    <tr>
+                        <td class="col-xs-3  hidden">
+                            <div class="KayitTarihi"></div>
+                        </td>
+                        <td class="col-xs-3  hidden">
+                            <div class="DegTarihi">@DateTime.Now</div>
+                        </td>
+                        <td class="col-xs-3 hidden">
+                            <input class="form-control SubeNo" readonly />
+                        </td>
+                        <td class="col-xs-3 hidden">
+                            <input class="alert-danger form-control FaturaNo" readonly />
+                        </td>
+                        <td class="col-xs-3 hidden">
+                            <input class="alert-danger form-control FaturaTarihi" readonly />
+                        </td>
+                        <td class="col-xs-3  hidden">
+                            <input class="alert-danger form-control IrsaliyeNo" readonly />
+                        </td>
+                        <td class="col-xs-3  hidden">
+                            <input class="alert-danger form-control IrsaliyeTarihi" readonly />
+                        </td>
+                        <td class="col-xs-3">
+                            <input id="input-siraNo" class="alert-danger form-control" value=@(i+2) readonly />
+                        </td>
+                        <td class="col-xs-3">
+                            <input class="form-control UrunAdi"
+                                   onchange="findRelated(this)" />
+                            <span class="text-danger span-UrunAdi"></span>
+                        </td>
+                        <td class="col-xs-3">
+                            <input class="alert-danger form-control UrunNo" readonly />
+                        </td>
+                        <td class="col-xs-3 hidden">
+                            <input class="alert-danger form-control TedarikciAdi" readonly />
+                        </td>
+                        <td class="col-xs-3">
+                            <input class="form-control UrunMiktari" onblur=" calculateTotal()" onchange="calculateAmount(this)" />
+                        </td>
+                        <td class="col-xs-3">
+                            <input class="alert-danger form-control MiktarBirimi" readonly />
+                        </td>
+                        <td class="col-xs-3">
+                            <input class="form-control BirimFiyatı" onblur=" calculateTotal()" onchange="calculateAmount(this)" />
+                        </td>
+                        <td class="col-xs-3">
+                            <div class="FiyatKurTipi">TL</div>
+                        </td>
+                        <td class="col-xs-3">
+                            <input class="alert-danger form-control KdvYuzde" readonly />
+                        </td>
+                        <td class="col-xs-3">
+                            <input class="alert-danger form-control UrunAltKategori" readonly />
+                        </td>
+                        <td class="col-xs-3">
+                            <input class="alert-danger form-control UrunKategori" readonly />
+                        </td>
+                        <td class="col-xs-3 hidden">
+                            <input class="form-control KdvsizToplam" readonly />
+                        </td>
+                        <td class="col-xs-3 hidden">
+                            <input class="form-control KdvTutar" readonly />
+                        </td>
+                        <td class="col-xs-3 hidden">
+                            <input class="form-control KdvliToplamTutar" readonly />
+                        </td>
+                        <td class="col-xs-3">
+                            <div id="div-newRow" class="btn btn-success">Yeni Satır</div>
+                        </td>
+                        <td class="col-xs-3 delete-btn" id="delete-@i-btn">
+                            <div class='btn btn-warning td-delete' onclick='deleteRow(this)'>Sil</div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <span class="error alert-danger" id="span-error"></span>
+        <div class="container">
+            <div class="col-xs-1">
+                <div class="btn btn-primary" style="margin-top:15px" onclick="CreateEntity()">Kaydet</div>
+            </div>
+
+            <div class="col-xs-2">
+                <a asp-controller="FaturaGiris" asp-action="FaturaListesi" class="btn btn-warning" style="margin-top:15px">Fatura Listesi</a>
+            </div>
+
+        </div>
+        <div class="col-xs-1">
+            <input id="input-rowNumber" class="alert-danger form-control hide" readonly />
+        </div>
+    </form>
+    <link rel="stylesheet" href="~/css/bootstrap-select.css" />
+    <link rel="stylesheet" href="~/css/datepicker.css" />
+    <link rel="stylesheet" href="~/css/jquery-ui.css">
+    @section Scripts
+        {
+
+        <script src="~/js/jquery1_11_3.min.js"></script>
+        <script src="~/js/bootstrap-select.js"></script>
+        <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+        <script src="~/js/jquery-ui1.12.1.js"></script>
+        <script type="text/javascript">
+
+            var urunList = [];
+            var tedList = [];
+         var editUrunList='@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.EditUrunList))';
+        editUrunList = JSON.parse(editUrunList);
+
+            function loadAll() {
+
+               $("#input-faturaSeriNo").keydown(function (e) {
+                    if (e.shiftKey || e.ctrlKey || e.altKey) {
+                        e.preventDefault();
+                    } else {
+                        var key = e.keyCode;
+                        if (!((key == 8) || (key == 32) || (key == 46) || (key >= 35 && key <= 40) || (key >= 65 && key <= 90))) {
+                            e.preventDefault();
+                        }
+                    }
+                });
+                $("#input-faturaNo").keydown(function (e) {
+                    var key = e.charCode || e.keyCode || 0;
+                    // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                    // home, end, period, and numpad decimal
+                    return (
+                        key == 8 ||
+                        key == 9 ||
+                        key == 13 ||
+                        key == 46 ||
+                        key == 190 ||
+                        (key >= 35 && key <= 40) ||
+                        (key >= 48 && key <= 57) ||
+                        (key >= 96 && key <= 105));
+                });
+                $("#IrsaliyeNoEnter").keydown(function (e) {
+                    var key = e.charCode || e.keyCode || 0;
+                    // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                    // home, end, period, and numpad decimal
+                    return (
+                        key == 8 ||
+                        key == 9 ||
+                        key == 13 ||
+                        key == 46 ||
+                        key == 190 ||
+                        (key >= 35 && key <= 40) ||
+                        (key >= 48 && key <= 57) ||
+                        (key >= 96 && key <= 105));
+                });
+                $(".UrunMiktari").keydown(function (e) {
+                    var key = e.charCode || e.keyCode || 0;
+                    // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                    // home, end, period, and numpad decimal
+                    return (
+                        key == 8 ||
+                        key == 9 ||
+                        key == 13 ||
+                        key == 46 ||
+                        key == 190 ||
+                        (key >= 35 && key <= 40) ||
+                        (key >= 48 && key <= 57) ||
+                        (key >= 96 && key <= 105));
+                });
+                $(".BirimFiyatı").keydown(function (e) {
+                    var key = e.charCode || e.keyCode || 0;
+                    // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                    // home, end, period, and numpad decimal
+                    return (
+                        key == 8 ||
+                        key == 9 ||
+                        key == 13 ||
+                        key == 46 ||
+                        key == 190 ||
+                        (key >= 35 && key <= 40) ||
+                        (key >= 48 && key <= 57) ||
+                        (key >= 96 && key <= 105));
+                });
+
+            var faturaSeriNo = "";
+            var faturaNo = "";
+            var faturaNoTotal = editUrunList[0].FaturaNo;
+            var faturaArr = faturaNoTotal.split("");
+            var faturaDateArr = editUrunList[0].FaturaTarihi.split("-");
+            var faturaDateD = faturaDateArr[0];
+            var faturaDateM = faturaDateArr[1];
+            var faturaDateY = faturaDateArr[2];
+            var length = editUrunList.length;
+            var irsaliyeDateArr = editUrunList[0].IrsaliyeTarihi.split("-");
+            var irsaliyeDateD = irsaliyeDateArr[0];
+            var irsaliyeDateM = irsaliyeDateArr[1];
+                var irsaliyeDateY = irsaliyeDateArr[2];
+                var kayitOlusturan = editUrunList[0].KayitKadi;
+
+
+            $('#SubeNoEnter').text(editUrunList[0].SubeNo);
+
+            $('#TedarikciAdiEnter').val(editUrunList[0].TedarikciAdi);
+            for (var i = 0; i < faturaArr.length; i++) {
+                if ($.isNumeric(faturaArr[i]))
+                    faturaNo += faturaArr[i];
+                else
+                    faturaSeriNo += faturaArr[i];
+            }
+            $('#input-faturaSeriNo').val(faturaSeriNo);
+            $('#input-faturaNo').val(faturaNo);
+            $('#IrsaliyeNoEnter').val(editUrunList[0].IrsaliyeNo);
+            $('#FaturaTarihiEnter').val(faturaDateY + "-" + faturaDateM + "-" + faturaDateD);
+                $('#IrsaliyeTarihiEnter').val(irsaliyeDateY + "-" + irsaliyeDateM + "-" + irsaliyeDateD);
+                $('#input-kayitOlusturan').text(kayitOlusturan);
+
+
+            $('.SubeNo').each(function () { $(this).val(editUrunList[0].SubeNo) }
+            );
+
+
+            $('.FaturaNo').each(function () {
+                $(this).val(editUrunList[0].FaturaNo)
+            });
+            $('.FaturaTarihi').each(function () {
+                $(this).val(editUrunList[0].FaturaTarihi)
+            });
+            $('.IrsaliyeNo').each(function () {
+                $(this).val(editUrunList[0].IrsaliyeNo)
+            });
+            $('.IrsaliyeTarihi').each(function () {
+                $(this).val(editUrunList[0].IrsaliyeTarihi)
+            });
+            $('.TedarikciAdi').each(function () {
+                $(this).val(editUrunList[0].TedarikciAdi)
+            });
+            $('.KayitTarihi').each(function () {
+                $(this).text(editUrunList[0].KayitTarihi)
+            });
+
+                for (var i = 0; i < length; i++) {
+                    $('.UrunAdi').eq(i).val(editUrunList[i].UrunAdi);
+                $('.UrunNo').eq(i).val(editUrunList[i].UrunNo);
+                $('.UrunMiktari').eq(i).val(editUrunList[i].UrunMiktari);
+                $('.MiktarBirimi').eq(i).val(editUrunList[i].MiktarBirimi);
+                $('.BirimFiyatı').eq(i).val(editUrunList[i].BirimFiyatı);
+                $('.KdvYuzde').eq(i).val(editUrunList[i].KdvYuzde);
+                $('.UrunAltKategori').eq(i).val(editUrunList[i].UrunAltKategori);
+                $('.UrunKategori').eq(i).val(editUrunList[i].UrunKategori);
+                $('.KdvsizToplam').eq(i).val(editUrunList[i].KdvsizToplam);
+                $('.KdvTutar').eq(i).val(editUrunList[i].KdvTutar);
+                    $('.KdvliToplamTutar').eq(i).val(editUrunList[i].KdvliToplamTutar);
+                    if (i < length - 2) {
+                        $('.delete-btn').eq(i).hide();
+
+                    }
+            }
+            for (var i = 0; i < $('.UrunNo').length; i++) {
+                if ($('.UrunNo').eq(i).val() == "") {
+                    $('.UrunNo').eq(i).closest("tr").hide();
+                }
+            }
+            var toplamKDVTutari = 0;
+            var toplamKDVHaricTutar = 0;
+            var toplamKDVDahilTutar = 0;
+
+            $('#table-info > tbody > tr:visible').each(function () {
+                toplamKDVHaricTutar += parseFloat($(this).find(".KdvsizToplam").val());
+                toplamKDVTutari += parseFloat($(this).find(".KdvTutar").val());
+                toplamKDVDahilTutar += parseFloat($(this).find(".KdvliToplamTutar").val());
+            });
+
+            toplamKDVHaricTutar = parseFloat(toplamKDVHaricTutar).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+            toplamKDVTutari = parseFloat(toplamKDVTutari).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+            toplamKDVDahilTutar = parseFloat(toplamKDVDahilTutar).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+            $("#input-KDVHaricTutar").text(toplamKDVHaricTutar + " TL");
+            $("#input-toplamKDVTutar").text(toplamKDVTutari + " TL");
+                $("#input-KDVDahilTutar").text(toplamKDVDahilTutar + " TL");
+
+            };
+            window.load(loadAll());
+            function deleteRow(e) {
+                var deleteID = $(e).parent().attr('id');
+                var sayi = "";
+                for (var i = 0; i < deleteID.length; i++) {
+                    if ($.isNumeric(deleteID[i]))
+                        sayi += deleteID[i];
+                }
+                sayi = parseInt(sayi);
+
+                $('#delete-' + (sayi - 1) + '-btn').show();
+                $(e).parent().parent().hide();
+
+            }
+        </script>
+        <script>
+            $('input').click(function () {
+
+                var key = $("#SubeNoEnter").text();
+                var arr = [];
+                var arrTed = [];
+                var say = 0;
+                var sayTed = 0;
+                $.ajax({
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    type: "GET",
+                    url: "/FaturaGiris/GetUrunList",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+
+                }).done(function (data) {
+                    urunList = JSON.parse(data);
+                    for (var i = 0; i < urunList.length; i++) {
+                        if (urunList[i].SubeNo == key) {
+                            arr[say] = urunList[i].UrunAdi;
+                            say++;
+                        }
+                    }
+                    $('.UrunAdi').each(function () {
+                        $(this).autocomplete({
+                            source: arr,
+                            change: function (event, ui) {
+                                if (ui.item == null) {
+                                    $(this).val("");
+                                    $(this).focus();
+                                    $(this).parent().find(".span-UrunAdi").text("Listeden ürün seçiniz.");
+                                }
+                                else
+                                    $(this).parent().find(".span-UrunAdi").text("");
+                            },
+                        });
+                    });
+                });
+
+                $.ajax({
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    type: "GET",
+                    url: "/FaturaGiris/GetTedarikciList",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+
+                }).done(function (data) {
+                    tedList = JSON.parse(data);
+                    for (var i = 0; i < tedList.length; i++) {
+                        if (tedList[i].SubeNo == key) {
+                            arrTed[sayTed] = tedList[i].TedarikciAdi;
+                            sayTed++;
+                        }
+                    }
+                    $('#TedarikciAdiEnter').autocomplete({
+                        source: arrTed,
+                        change: function (event, ui) {
+                            if (ui.item == null) {
+                                $(this).val("");
+                                $(this).focus();
+                                $("#span-TedarikciAdiEnter").text("Listeden tedarikçi seçiniz.");
+                            }
+                            else
+                                $("#span-TedarikciAdiEnter").text("");
+                        },
+
+                    });
+
+
+                });
+            })
+        </script>
+        <script>
+            function calculateTotal() {
+
+                var toplamKDVTutari = 0;
+                var toplamKDVHaricTutar = 0;
+                var toplamKDVDahilTutar = 0;
+
+                $('#table-info > tbody > tr:visible').each(function () {
+                    toplamKDVHaricTutar += parseFloat($(this).find(".KdvsizToplam").val());
+                    toplamKDVTutari += parseFloat($(this).find(".KdvTutar").val());
+                    toplamKDVDahilTutar += parseFloat($(this).find(".KdvliToplamTutar").val());
+                });
+
+                toplamKDVHaricTutar = parseFloat(toplamKDVHaricTutar).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                toplamKDVTutari = parseFloat(toplamKDVTutari).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                toplamKDVDahilTutar = parseFloat(toplamKDVDahilTutar).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                $("#input-KDVHaricTutar").text(toplamKDVHaricTutar + " TL");
+                $("#input-toplamKDVTutar").text(toplamKDVTutari + " TL");
+                $("#input-KDVDahilTutar").text(toplamKDVDahilTutar + " TL");
+
+            }
+
+            function CTRL() {
+                var say = 1;
+                var ctrlNo = 0;
+                $('#table-info tbody tr:visible').each(function () {
+                    var subeNo = $(this).find(".SubeNo").val();
+                    var faturaNo = $(this).find(".FaturaNo").val();
+                    var FaturaTarihi = $(this).find(".FaturaTarihi").val();
+                    var urunNo = $(this).find(".UrunNo").val();
+                    var tedarikciAdi = $(this).find(".TedarikciAdi").val();
+                    var miktar = $(this).find(".UrunMiktari").val();
+                    var brFiyat = $(this).find(".BirimFiyatı").val();
+
+                    if (subeNo == "") {
+                        alert(say + ".sıra için şube no seçiniz...");
+                        ctrlNo = -1;
+                    }
+                    else if (faturaNo == "") {
+                        alert(say + ".sıra fatura no giriniz...");
+                        ctrlNo = -1;
+                    }
+                    else if (FaturaTarihi == "") {
+                        alert(say + ".sıra fatura tarihi giriniz...");
+                        ctrlNo = -1;
+                    }
+                    else if (urunNo == "") {
+                        alert(say + ".sıra ürün adı seçiniz...");
+                        ctrlNo = -1;
+                    }
+                    else if (tedarikciAdi == "") {
+                        alert(say + ".sıra tedarikçi adı giriniz...");
+                        ctrlNo = -1;
+                    }
+                    else if (miktar == "") {
+                        alert(say + ".sıra miktar giriniz...");
+                        ctrlNo = -1;
+                    }
+                    else if (brFiyat == "") {
+                        alert(say + ".sıra birim fiyat giriniz...");
+                        ctrlNo = -1;
+                    }
+                    else {
+                        ctrlNo = 1;
+                    }
+
+                    say++;
+                })
+
+                if (ctrlNo == 1)
+                    return true;
+                else if (ctrlNo == -1)
+                    return false;
+            }
+
+
+            $("div#div-newRow").click(function () {
+                var addHeight = 50;
+                var rowCount = $('#table-info tbody tr:visible').length + 1;
+                var minHeight = 250 + (rowCount * addHeight);
+                var rowStatus = $(this).parent().parent().next("tr");
+                if (CTRL()) {
+                    if (!rowStatus.is(":visible")) {
+                        rowStatus.show();
+                        $(".card2").css('min-height', minHeight.toString() + "px");
+                    }
+                    $(this).parent().next().hide();
+                }
+
+            });
+
+
+
+            function goToUpperCase() {
+                $('#input-faturaSeriNo').val($('#input-faturaSeriNo').val().toUpperCase());
+            }
+
+            function copyToTable() {
+                goToUpperCase();
+                var subeNo = $('#SubeNoEnter').text();
+                var tedAdi = $('#TedarikciAdiEnter').val();
+                var faturaNo = $('#input-faturaSeriNo').val() + $('#input-faturaNo').val();
+                var faturaTarihi = $('#FaturaTarihiEnter').val().toString();
+                faturaTarihi = faturaTarihi.split('-').reverse().join('-');
+                var irsaliyeNo = $('#IrsaliyeNoEnter').val();
+                var irsaliyeTarihi = $('#IrsaliyeTarihiEnter').val();
+                irsaliyeTarihi = irsaliyeTarihi.split('-').reverse().join('-');
+                $('.SubeNo').each(function () { $(this).val(subeNo) }
+                );
+                $('.FaturaNo').each(function () {
+                    $(this).val(faturaNo)
+                });
+                $('.FaturaTarihi').each(function () {
+                    $(this).val(faturaTarihi)
+                });
+                $('.IrsaliyeNo').each(function () {
+                    $(this).val(irsaliyeNo)
+                });
+                $('.IrsaliyeTarihi').each(function () {
+                    $(this).val(irsaliyeTarihi)
+                });
+                $('.TedarikciAdi').each(function () {
+                    $(this).val(tedAdi)
+                });
+
+            }
+
+            function clearRelated() {
+                $(".UrunNo").val("");
+                $(".MiktarBirimi").val("");
+                $(".KdvYuzde").val("");
+                $(".UrunAltKategori").val("");
+                $(".UrunKategori").val("");
+            }
+            function findRelated(x) {
+                var key = $(x).val();
+                var sonucUrunNo = "";
+                var sonucBirim = "";
+                var sonucKDVYuzde = 0;
+                var sonucAltKat = "";
+                var sonucKat = "";
+
+                for (var i = 0; i < urunList.length; i++) {
+                    if (urunList[i].UrunAdi == key) {
+                        sonucUrunNo = urunList[i].UrunNo;
+                        sonucBirim = urunList[i].MiktarBirimi;
+                        sonucKDVYuzde = urunList[i].KdvOrani;
+                        sonucAltKat = urunList[i].UrunAltKategori;
+                        sonucKat = urunList[i].UrunKategori;
+                    }
+                }
+
+                $(x).closest("tr").find(".UrunNo").val(sonucUrunNo);
+                $(x).closest("tr").find(".MiktarBirimi").val(sonucBirim);
+                $(x).closest("tr").find(".KdvYuzde").val(sonucKDVYuzde);
+                $(x).closest("tr").find(".UrunAltKategori").val(sonucAltKat);
+                $(x).closest("tr").find(".UrunKategori").val(sonucKat);
+
+                if (key != "") {
+                    $(x).closest("tr").find(".UrunMiktari").removeAttr("disabled");
+                    $(x).closest("tr").find(".BirimFiyatı").removeAttr("disabled");
+                    $(x).closest("tr").find(".UrunMiktari").removeAttr("placeholder");
+                    $(x).closest("tr").find(".BirimFiyatı").removeAttr("placeholder");
+
+                }
+                calculateAmount(x);
+
+            }
+            function calculateAmount(x) {
+                var KDVOrani = $(x).closest("tr").find(".KdvYuzde").val();
+                var miktar = $(x).closest("tr").find(".UrunMiktari").val();
+                var brFiyat = $(x).closest("tr").find(".BirimFiyatı").val();
+
+
+                $(x).closest("tr").find(".KdvsizToplam").val(brFiyat * miktar);
+                $(x).closest("tr").find(".KdvTutar").val(brFiyat * miktar * KDVOrani / 100);
+                $(x).closest("tr").find(".KdvliToplamTutar").val(brFiyat * miktar * (1 + KDVOrani / 100));
+            }
+
+
+        </script>
+        <script>
+            function CreateEntity() {
+
+                var subeNo = "";
+                var faturaNo = "";
+                var faturaTarihi = "";
+                var irsaliyeNo = "";
+                var irsaliyeTarihi = "";
+                var tedarikciAdi = "";
+                var urunNo = "";
+                var urunAdi = "";
+                var urunKategori = "";
+                var urunAltKategori = "";
+                var urunMiktari = 0;
+                var urunMiktarBirimi = "";
+                var urunBirimFiyati = 0;
+                var urunFiyatKurTipi = "";
+                var KDVsizToplam = 0;
+                var KDVYuzde = 0;
+                var KDVTutar = 0;
+                var KDVliToplamTutar = 0;
+                var kayitTarihi = "";
+                var degTarihi = "";
+                var kayitOlustur = "";
+                var kayitDegistir = "";
+                var jsonArr = {};
+                var jsonArrTotal = [];
+                if (CTRL()) {
+                    $('#table-info tbody tr:visible').each(function () {
+                        subeNo = $(this).find(".SubeNo").val();
+                        faturaNo = $(this).find(".FaturaNo").val();
+                        faturaTarihi = $(this).find(".FaturaTarihi").val();
+                        irsaliyeNo = $(this).find(".IrsaliyeNo").val();
+                        irsaliyeTarihi = $(this).find(".IrsaliyeTarihi").val();
+                        tedarikciAdi = $(this).find(".TedarikciAdi").val();
+                        urunNo = $(this).find(".UrunNo").val();
+                        urunAdi = $(this).find(".UrunAdi").val();
+                        urunKategori = $(this).find(".UrunKategori").val();
+                        urunAltKategori = $(this).find(".UrunAltKategori").val();
+                        urunMiktari = $(this).find(".UrunMiktari").val();
+                        urunMiktarBirimi = $(this).find(".MiktarBirimi").val();
+                        urunBirimFiyati = $(this).find(".BirimFiyatı").val();
+                        urunFiyatKurTipi = $(this).find(".FiyatKurTipi").text();
+                        KDVsizToplam = $(this).find(".KdvsizToplam").val();
+                        KDVYuzde = $(this).find(".KdvYuzde").val();
+                        KDVTutar = $(this).find(".KdvTutar").val();
+                        KDVliToplamTutar = $(this).find(".KdvliToplamTutar").val();
+                        kayitTarihi = $(this).find(".KayitTarihi").text();
+                        degTarihi = $(this).find(".DegTarihi").text();
+                        kayitOlustur = $('#input-kayitOlusturan').text();
+                        kayitDegistir = $('#input-kayitDegistiren').text();
+
+                        jsonArr.SubeNo = subeNo;
+                        jsonArr.FaturaNo = faturaNo;
+                        jsonArr.FaturaTarihi = faturaTarihi;
+                        jsonArr.IrsaliyeNo = irsaliyeNo;
+                        jsonArr.IrsaliyeTarihi = irsaliyeTarihi;
+                        jsonArr.TedarikciAdi = tedarikciAdi;
+                        jsonArr.UrunNo = urunNo;
+                        jsonArr.UrunAdi = urunAdi;
+                        jsonArr.UrunKategori = urunKategori;
+                        jsonArr.UrunAltKategori = urunAltKategori;
+                        jsonArr.UrunMiktari = urunMiktari;
+                        jsonArr.MiktarBirimi = urunMiktarBirimi;
+                        jsonArr.BirimFiyatı = urunBirimFiyati;
+                        jsonArr.FiyatKurTipi = urunFiyatKurTipi;
+                        jsonArr.KdvsizToplam = KDVsizToplam;
+                        jsonArr.KdvYuzde = KDVYuzde;
+                        jsonArr.KdvTutar = KDVTutar;
+                        jsonArr.KdvliToplamTutar = KDVliToplamTutar;
+                        jsonArr.KayitTarihi = kayitTarihi;
+                        jsonArr.DegTarihi = degTarihi;
+                        jsonArr.KayitKadi = kayitOlustur;
+                        jsonArr.DegKadi = kayitDegistir;
+
+                        jsonArrTotal.push(jsonArr);
+                        jsonArr = {};
+                    });
+                    $.ajax({
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        type: "POST",
+                        url: "/FaturaGiris/Edit",
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify(jsonArrTotal),
+                        dataType: "text",
+
+                    }).done(function (message) {
+                        if (message) {
+                            $('#span-error').text(message); // display the error message in the span tag
+                        } else {
+                            window.location.href = '/FaturaGiris/FaturaListesi' // redirect to another page
+                        }
+                    }).fail(function (message) {
+                        window.location.href = '/FaturaGiris/FaturaListesi'
+                    });
+                }
+
+            }
+        </script>
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }
+
+
+

@@ -1,0 +1,592 @@
+﻿@model StockControl.ViewModels.TBOMEditViewModel
+
+@using System.Globalization;
+@using Microsoft.AspNetCore.Http
+
+
+
+
+
+<style>
+
+    .modal.modal-fullscreen .modal-dialog,
+    .modal.modal-fullscreen .modal-content {
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+
+    .modal.modal-fullscreen .modal-dialog {
+        margin: 0;
+        width: 100%;
+    }
+
+    .modal.modal-fullscreen .modal-content {
+        border: none;
+        -moz-border-radius: 0;
+        border-radius: 0;
+        -webkit-box-shadow: inherit;
+        -moz-box-shadow: inherit;
+        -o-box-shadow: inherit;
+        box-shadow: inherit;
+    }
+
+    .modal.modal-fullscreen.force-fullscreen {
+        /* Remove the padding inside the body */
+    }
+
+        .modal.modal-fullscreen.force-fullscreen .modal-body {
+            padding: 0;
+        }
+
+        .modal.modal-fullscreen.force-fullscreen .modal-header,
+        .modal.modal-fullscreen.force-fullscreen .modal-footer {
+            left: 0;
+            position: absolute;
+            right: 0;
+        }
+
+        .modal.modal-fullscreen.force-fullscreen .modal-header {
+            top: 0;
+        }
+
+        .modal.modal-fullscreen.force-fullscreen .modal-footer {
+            bottom: 0;
+        }
+</style>
+<form>
+    <div class="container">
+        <div class="form-row">
+            <div class="col-xs-3">
+                <h4>Reçete Detaylar</h4>
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Şube No:</label>
+                <div id="SubeNoEnter" readonly>@Context.Session.GetString("SubeNo")</div>
+            </div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Oluşturan:</label>
+                    <div id="input-kayitOlusturan">@Model.BOMInfo.ElementAt(0).KayitKadi</div>
+                </div>
+            </div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Değiştiren:</label>
+                    <div id="input-kayitDegistiren">@Model.BOMInfo.ElementAt(0).DegKadi</div>
+                </div>
+            </div>
+            <div class="float-right">
+                <div class=" pull-right">
+                    <input class="btn btn-success" type="button" id="input-excel" onclick="Excel()" value="Excel Oluştur" disabled/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-5"></div>
+        <div class="float-right">
+            <div class="col-xs-2">
+                <label class="col-form-label">Kayıt Tarihi:</label>
+                <div id="input-kayitTarihi">@Model.BOMInfo.ElementAt(0).KayitTarihi</div>
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label ">Değiştirme Tarihi:</label>
+                <div id="DegTarihi">@Model.BOMInfo.ElementAt(0).DegTarihi</div>
+            </div>
+        </div>
+    </div>
+    <hr />
+
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="container table-bordered">
+
+        <div class="container">
+            <div class="col-xs-5">
+                <h5 class="text-danger">Nihai Ürün</h5>
+            </div>
+        </div>
+        <div class="container">
+
+            <div class="col-xs-3">
+                <label class="col-form-label">Ürün Adı:</label>
+                @if (Model.BOMInfo.ElementAt(0).BaglAraUrunAdi != "")
+                {
+                    <div id="NihaiUrunAdi">@Model.BOMInfo.ElementAt(0).BaglAraUrunAdi</div>
+                }
+                else
+                {
+                    <div id="NihaiUrunAdi">@Model.BOMInfo.ElementAt(0).BaglBitUrunAdi</div>
+                }
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Ürün Miktarı:</label>
+                <div id="NihaiUrunMiktari">@Model.BOMInfo.ElementAt(0).BaglRefMik.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</div>
+
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Br:</label>
+                <div id="NihaiUrunMiktarBr">@ViewBag.miktarBirim[0]</div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="col-xs-2">
+                <label class="col-form-label">Ürün Seviyesi:</label>
+                @if (Model.BOMInfo.ElementAt(0).BaglBitUrunNo == "")
+                {
+                    <div id="NihaiUrunSeviyesi">2 - Ara Ürün</div>
+                }
+                else
+                {
+                    <div id="NihaiUrunSeviyesi">1 - Bitmiş Ürün</div>
+                }
+            </div>
+            <div class="col-xs-1"></div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Ürün No:</label>
+                @if (Model.BOMInfo.ElementAt(0).BaglAraUrunNo != "")
+                {
+                    <div id="NihaiUrunNo">@Model.BOMInfo.ElementAt(0).BaglAraUrunNo</div>
+                }
+                else
+                {
+                    <div id="NihaiUrunNo">@Model.BOMInfo.ElementAt(0).BaglBitUrunNo</div>
+                }
+            </div>
+
+
+            <div class="col-xs-2">
+                <label class="col-form-label">Maliyet:</label>
+                <div id="NihaiUrunMaliyeti"><b></b></div>
+            </div>
+            <div class="col-xs-1">
+                <label class="col-form-label">Kur:</label>
+                <div id="NihaiUrunMaliyetKur">TL</div>
+            </div>
+
+        </div>
+
+        <div class="container" style="margin-bottom:25px;margin-top:15px">
+
+            <div class="col-xs-3 table-bordered text-center pull-right" style="padding:5px;margin-right:250px">
+                <div class="bg-danger"><b>SON 6(ALTI) AY</b></div>
+                <b>Maliyet Hesabı Yöntemi:</b><br />
+                <label class="radio-inline"><input type="radio" name="radio-cost" value="Max">Max</label>
+                <label class="radio-inline"><input type="radio" name="radio-cost" value="Avg">Avg</label>
+                <label class="radio-inline"><input type="radio" name="radio-cost" value="Min">Min</label>
+            </div>
+        </div>
+    </div>
+    <table class="table table-bordered" id="table-recete">
+        <thead>
+            <tr>
+
+                <th class="col-xs-3">Ürün Adı</th>
+                <th class="col-xs-3">Ürün No</th>
+                <th class="col-xs-2">Ürün Seviyesi</th>
+                <th class="col-xs-1">Fire Oranı %</th>
+                <th class="col-xs-1">Miktar</th>
+                <th class="col-xs-1">Fireli Miktar</th>
+                <th class="col-xs-2">Miktar Birim</th>
+                <th class="col-xs-3" id="th-maliyet">Br.Maliyet</th>
+                <th class="col-xs-1">Maliyet TL</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var satirNumarasi = 1;
+                var urunAdi = "urunAdi";
+                var urunNo = "UrunNo";
+                var urunSev = "urunSev";
+                var fire = "fire";
+                var qty = "qty";
+                var fireliMik = "fireliMik";
+                var mikBr = "mikBr";
+                var price = "price";
+                var cost = "cost";
+                var expandBtn = "expandBtn";
+                var araUrun = "araUrun";
+
+            }
+            @foreach (var item in Model.BOMInfo)
+            {
+                @if (item.UrunSeviyesi != "2 - Ara Ürün")
+                {
+                    <tr>
+                        <td class="col-xs-3 td-urunAdi" id="td-@satirNumarasi@urunAdi">@item.UrunAdi</td>
+                        <td class="col-xs-2 td-urunNo" id="td-@satirNumarasi@urunNo">@item.UrunNo</td>
+                        <td class="col-xs-2 td-urunSev" id="td-@satirNumarasi@urunSev">@item.UrunSeviyesi</td>
+                        <td class="td-fire" id="td-@satirNumarasi@fire"><div>@Convert.ToInt32(item.FireOrani)</div></td>
+                        <td class='col-xs-1 td-qty'><div id='input-@satirNumarasi@qty'>@item.UrunMiktari.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</div></td>
+                        <td class='col-xs-2 td-fireliMik' id='td-@satirNumarasi@fireliMik'>@item.FireliMiktar.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                        <td class='col-xs-2 td-mikBr' id='td-@satirNumarasi@mikBr'>@item.MiktarBirimi</td>
+                        <td class='col-xs-3 td-price' id='td-@satirNumarasi@price'></td>
+                        <td class='col-xs-1 td-cost' id='td-@satirNumarasi@cost'></td>
+                    </tr>
+
+                }
+                else
+                {
+                    <tr>
+                        <td class="col-xs-3 td-urunAdi" id="td-@satirNumarasi@urunAdi"><div class='btn btn-default glyphicon-plus div-expand' id='div-@satirNumarasi@expandBtn' onclick='ExpandRow(this)'></div>@item.UrunAdi</td>
+                        <td class="col-xs-2 td-urunNo" id="td-@satirNumarasi@urunNo">@item.UrunNo</td>
+                        <td class="col-xs-2 td-urunSev" id="td-@satirNumarasi@urunSev">@item.UrunSeviyesi</td>
+                        <td class="td-fire" id="td-@satirNumarasi@fire"><div>@Convert.ToInt32(item.FireOrani)</div></td>
+                        <td class='col-xs-1 td-qty'><div id='input-@satirNumarasi@qty'>@item.UrunMiktari.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</div></td>
+                        <td class='col-xs-2 td-fireliMik' id='td-@satirNumarasi@fireliMik'>@item.FireliMiktar.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                        <td class='col-xs-2 td-mikBr' id='td-@satirNumarasi@mikBr'>@item.MiktarBirimi</td>
+                        <td class='col-xs-3 td-price' id='td-@satirNumarasi@price'></td>
+                        <td class='col-xs-1 td-cost' id='td-@satirNumarasi@cost'></td>
+                    </tr>
+                    @foreach (var hamItem in Model.AllBOM.Where(z => z.BaglAraUrunNo == item.UrunNo))
+                    {
+                        var hamFireOrani = Convert.ToDecimal(hamItem.FireOrani) * (1 + Convert.ToDecimal(item.FireOrani) / 100);
+                        var hamUrunMik = Convert.ToDecimal(item.UrunMiktari) * Convert.ToDecimal(hamItem.UrunMiktari);
+                        var hamFireliMik = hamUrunMik * (1 + Convert.ToDecimal(hamFireOrani) / 100);
+                        <tr class='collapse out bg-warning small tr-@satirNumarasi@araUrun'>
+
+                            <td><div>@hamItem.UrunAdi</div></td>
+                            <td><div class='araUrunHammaddeUrunNo'>@hamItem.UrunNo</div></td>
+                            <td><div>@hamItem.UrunSeviyesi</div></td>
+                            <td class='td-@item.UrunNo-hammaddeFireOnload hide'>@Convert.ToDecimal(hamItem.FireOrani).ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                            <td class='td-@item.UrunNo-hammaddeFire'>@Convert.ToDecimal(hamFireOrani).ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                            <td><div class='araUrunHammaddeMiktar'>@hamUrunMik.ToString("0.00", new CultureInfo("en-US")).Replace("$", "") (@hamItem.UrunMiktari.ToString("C2", new CultureInfo("en-US")).Replace("$", "")/br)</div></td>
+                            <td class='td-@item.UrunNo-hammaddeFireliMiktar'>@hamFireliMik.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                            <td><div>@hamItem.MiktarBirimi</div></td>
+                            <td><div class='araUrunHammaddeBrFiyat'></div></td>
+                            <td><div class='araUrunHammaddeToplamMaliyet'></div></td>
+                        </tr>
+                    }
+                }
+                satirNumarasi++;
+            }
+        </tbody>
+    </table>
+</form>
+<div class="container">
+    <div class="col-xs-1">
+        @if (Model.BOMInfo.ElementAt(0).BaglAraUrunNo != "")
+        {
+            <a asp-action="Edit" style="margin-top:15px" asp-route-id="@Model.BOMInfo.ElementAt(0).BaglAraUrunNo" class="btn btn-success">Düzenle</a>
+        }
+        else
+        {
+            <a asp-action="Edit" style="margin-top:15px" asp-route-id="@Model.BOMInfo.ElementAt(0).BaglBitUrunNo" class="btn btn-success">Düzenle</a>
+
+        }
+    </div>
+
+    <div class="col-xs-2">
+        <a asp-controller="BOM" asp-action="BOMListesi" class="btn btn-warning" style="margin-top:15px">Reçete Listesi</a>
+
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/css/bootstrap-select.css" />
+<link rel="stylesheet" href="~/css/datepicker.css" />
+<link rel="stylesheet" href="~/css/dataTables.bootstrap.min.css" />
+
+
+
+
+@section Scripts {
+
+    <script src="~/js/jquery1_11_3.min.js"></script>
+    <script src="~/js/jquery.dataTables.min.js"></script>
+    <script src="~/js/dataTables.bootstrap.min.js"></script>
+    <script src="~/js/dataTables.buttons.min.js"></script>
+    <script src="~/js/buttons.bootstrap.min.js"></script>
+    <script src="~/js/bootstrap-select.js"></script>
+    <script src="~/plugin/dataTable_JumpToDatatable.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/table2excel.js"></script>
+    <script>
+
+        // miktarBr = JSON.parse(miktarBr);
+        var urunAdiList = [];
+        var priceList = [];
+        var prices = [];
+        var say = 0;
+
+
+        function onLoad() {
+
+
+            var subeNo = $("#SubeNoEnter").text();
+
+            var sayi = 0;
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "GET",
+                url: "/BOM/GetPriceList",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+
+            }).done(function (data) {
+                prices = JSON.parse(data);
+                for (var i = 0; i < prices.length; i++) {
+                    if (prices[i].SubeNo == subeNo) {
+                        priceList[sayi] = prices[i];
+                        sayi++;
+                    }
+                }
+
+            });
+
+
+
+
+
+        }
+        window.onload(onLoad());
+    </script>
+    <script>
+        function ExpandRow(e) {
+            var val = ($(e).attr('id')).toString();
+
+            if ($(e).hasClass('btn-default')) {
+                $(e).removeClass('btn-default');
+                $(e).addClass('btn-danger');
+                $(e).removeClass('glyphicon-plus');
+                $(e).addClass('glyphicon-minus');
+            }
+            else {
+                $(e).addClass('btn-default');
+                $(e).removeClass('btn-danger');
+                $(e).addClass('glyphicon-plus');
+                $(e).removeClass('glyphicon-minus');
+
+            }
+
+            var res = "";
+            for (var i = 0; i < val.length; i++) {
+                if ($.isNumeric(val[i]))
+                    res += val[i];
+            }
+
+            if ($(".tr-" + res + "araUrun").hasClass("out")) {
+                $(".tr-" + res + "araUrun").addClass("in");
+                $(".tr-" + res + "araUrun").removeClass("out");
+            } else {
+                $(".tr-" + res + "araUrun").addClass("out");
+                $(".tr-" + res + "araUrun").removeClass("in");
+            }
+
+        }
+
+
+        $('input[type=radio][name=radio-cost]').change(function () {
+            $('#input-excel').removeAttr('disabled');
+            $('.td-urunNo').each(function () {
+                var rowNumber = "";
+                var seviye = $(this).next('.td-urunSev').text();
+                var rowString = $(this).attr('id');
+
+                for (var i = 0; i < rowString.length; i++) {
+                    if ($.isNumeric(rowString[i]))
+                        rowNumber += rowString[i];
+                }
+                var fireOrani = 1 + parseFloat($(this).next().next().find('div').text()) / 100;
+                var urunNo = $(this).text();
+                var fiyatList = [];
+                var say = 0;
+                var avg = 0;
+                var max = 0;
+                var min = 0;
+                var sum = 0;
+                for (var i = 0; i < priceList.length; i++) {
+                    if (priceList[i].UrunNo == urunNo && priceList[i].BirimFiyatı != 0) {
+                        fiyatList[say] = parseFloat(priceList[i].BirimFiyatı);
+                        say++;
+                    }
+                }
+                for (var i = 0; i < fiyatList.length; i++) {
+                    avg += fiyatList[i];
+                }
+                if (avg != 0) {
+                    avg /= fiyatList.length;
+                    max = Math.max.apply(null, fiyatList);
+                    min = Math.min.apply(null, fiyatList);
+                }
+                fiyatList = [];
+                var qty = $("#input-" + rowNumber + "qty").text();
+
+                var calcType = $('input[type=radio][name=radio-cost]:checked').val();
+                qty = parseFloat(qty).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                avg = parseFloat(avg).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                min = parseFloat(min).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                max = parseFloat(max).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                if (seviye != "2 - Ara Ürün") {
+                    switch (calcType) {
+                        case "Avg":
+                            $("#td-" + rowNumber + "price").text(avg);
+                            sum = qty * avg * fireOrani;
+                            break;
+                        case "Min":
+                            $("#td-" + rowNumber + "price").text(min);
+                            sum = qty * min * fireOrani;
+                            break;
+                        case "Max":
+                            $("#td-" + rowNumber + "price").text(max);
+                            sum = qty * max * fireOrani;
+                            break;
+                    };
+                }
+                else {
+                    var araUrunBrFiyati = 0;
+                    var araFireOran = 0;
+                    $(".tr-" + rowNumber + "araUrun").find('.araUrunHammaddeBrFiyat').each(function () {
+                        var hamUrunNo = $(this).parent().parent().find('.araUrunHammaddeUrunNo').text();
+
+                        var hamFiyatList = [];
+                        var hamSay = 0;
+                        var hamMax = 0;
+                        var hamMin = 0;
+                        var hamAvg = 0;
+                        var hamSum = 0;
+                        for (var z = 0; z < priceList.length; z++) {
+                            if (priceList[z].UrunNo == hamUrunNo && priceList[z].BirimFiyatı != 0) {
+                                hamFiyatList[hamSay] = parseFloat(priceList[z].BirimFiyatı);
+                                hamSay++;
+                            }
+                        }
+                        for (var i = 0; i < hamFiyatList.length; i++) {
+                            hamAvg += hamFiyatList[i];
+                        }
+                        if (hamAvg != 0) {
+                            hamAvg /= hamFiyatList.length;
+                            hamMax = Math.max.apply(null, hamFiyatList);
+                            hamMin = Math.min.apply(null, hamFiyatList);
+                        }
+                        hamFiyatList = [];
+                        var araQtyString = $(this).parent().parent().find('.araUrunHammaddeMiktar').text().split(' ');
+                        var araQty = "";
+
+                        for (var i = 0; i < araQtyString[1].length; i++) {
+                            if ($.isNumeric(araQtyString[1][i]) || araQtyString[1][i] == ".")
+                                araQty += araQtyString[1][i];
+                        }
+
+                        var hamResult = 0;
+                        var hamBrResult = 0;
+                        var hamFireMiktar = parseFloat($(this).parent().prev().prev().text());
+                        var hamFireOran = parseFloat($(this).parent().prev().prev().prev().prev().text());
+                        hamFireOran = 1 + hamFireOran / 100;
+                        hamFireOran = parseFloat(hamFireOran).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        hamFireMiktar = parseFloat(hamFireMiktar).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        araQty = parseFloat(araQty).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        hamAvg = parseFloat(hamAvg).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        hamMin = parseFloat(hamMin).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        hamMax = parseFloat(hamMax).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+
+                        switch (calcType) {
+                            case "Avg":
+                                hamResult = hamAvg * hamFireOran * araQty;
+                                hamBrResult = hamAvg;
+                                break;
+                            case "Min":
+                                hamResult = hamMin * hamFireOran * araQty;
+                                hamBrResult = hamMin;
+                                break;
+                            case "Max":
+                                hamResult = hamMax * hamFireOran * araQty;
+                                hamBrResult = hamMax;
+                                break;
+
+                        };
+                        var araFireOran = 1 + parseFloat($('#td-' + rowNumber + 'fire').find('input').val()) / 100;
+
+                        hamResult = parseFloat(hamResult).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        $(this).text(hamResult + " (" + hamBrResult + "/br)");
+                        araUrunBrFiyati += parseFloat(hamResult);
+
+
+                        araQty = "";
+                    });
+                    araUrunBrFiyati = parseFloat(araUrunBrFiyati).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                    $("#td-" + rowNumber + "price").text(araUrunBrFiyati);
+                    sum = araUrunBrFiyati * qty * fireOrani;
+
+
+
+                }//else
+
+                sum = parseFloat(sum).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                $("#td-" + rowNumber + "cost").text(sum);
+
+                sum = 0;
+
+            });
+            var costSum = 0;
+            $('.td-cost').each(function () {
+                costSum += parseFloat($(this).text());
+            });
+            costSum = parseFloat(costSum).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+            $('#NihaiUrunMaliyeti').val(costSum);
+        });
+
+        function CalcCost(e) {
+            var x = $(e).parent().prev().find('.input-fire');
+            x.removeProp('readonly');
+            AddFire(x);
+            $('input[type=radio][name=radio-cost]').trigger("change");
+            AddFire(x);
+        }
+
+        function Excel() {
+            var nihaiUrunSev = $('#NihaiUrunSeviyesi').text();
+            var urunNo = $('#NihaiUrunNo').text();
+            var urunAdi = $('#NihaiUrunAdi').text();
+            var urunMik = $('#NihaiUrunMiktari').text();
+            var urunMikBr = $('#NihaiUrunMiktarBr').text();
+            $("#table-recete").before('<table id="table-recete2"><thead><tr id="tr-nihaiUrunNo"><th colspan="9"><b>Nihai Ürün No: </b>' + urunNo + '</th></tr>'
+                + '<tr id="tr-nihaiUrunAdi"><th colspan="9"><b>Nihai Ürün Adı: </b>' + urunAdi + '</th></tr>'
+                + '<tr id="tr-nihaiUrunSev"><th colspan="9"><b>Nihai Ürün Seviyesi: </b>' + nihaiUrunSev + '</th></tr>'
+                + '<tr id="tr-nihaiUrunMik"><th colspan="9"><b>Nihai Miktar: </b>' + urunMik + '</th></tr>'
+                + '<tr id="tr-nihaiUrunMikBr"><th colspan="9"><b>Nihai Miktar Birim: </b>' + urunMikBr + '</th></tr>'
+                + '<th class="col-xs-3">Ürün Adı</th>'
+                + '<th class="col-xs-3">Ürün No</th>'
+                + '<th class="col-xs-2">Ürün Seviyesi</th>'
+                + '<th class="col-xs-1">Fire Oranı %</th>'
+                + '<th class="col-xs-1">Miktar</th>'
+                + '<th class="col-xs-1">Fireli Miktar</th>'
+                + '<th class="col-xs-2">Miktar Birim</th>'
+                + '<th class="col-xs-3" id="th-maliyet">Br.Maliyet</th>'
+                + '<th class="col-xs-1">Maliyet TL</th>'
+                + '</tr></thead>');
+            $('.td-urunAdi').each(function () {
+                $("#table-recete2").append("<tr><td>" + $(this).text() + "</td>"
+                    + "<td>" + $(this).next().text() + "</td>"
+                    + "<td>" + $(this).next().next().text() + "</td>"
+                    + "<td>" + $(this).next().next().next().find('div').text() + "</td>"
+                    + "<td>" + $(this).next().next().next().next().find('div').text() + "</td>"
+                    + "<td>" + $(this).next().next().next().next().next().text() + "</td>"
+                    + "<td>" + $(this).next().next().next().next().next().next().text() + "</td>"
+                    + "<td>" + $(this).next().next().next().next().next().next().next().text() + "</td>"
+                    + "<td>" + $(this).next().next().next().next().next().next().next().next().text() + "</td></tr>");
+            });
+
+            $("#table-recete2").table2excel({
+                name: "Urun_Recete",
+                filename: "Urun_Recete",
+                fileext: ".xls",
+
+            });
+
+            $("#table-recete2").remove();
+
+
+        }
+    </script>
+    <script>
+
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,160 @@
+﻿@model StockControl.Models.TSubeBilgileri
+@using Microsoft.AspNetCore.Http
+
+<form asp-controller="Sube" asp-action="Edit">
+    <div class="container">
+        <div class="form-row">
+            <div class="col-xs-3">
+                <h4>Şube Güncelleme</h4>
+            </div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Oluşturan:</label>
+                    <div>@Model.KayitKadi</div>
+                    <input asp-for="KayitKadi" class="alert-danger form-control hide" readonly />
+                </div>
+            </div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Değiştiren:</label>
+                    <div>@Context.Session.GetString("User")</div>
+                    <input asp-for="DegKadi" value="@Context.Session.GetString("User")" class="alert-danger form-control hide" readonly />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-3"></div>
+        <div class="float-right">
+            <div class="col-xs-2">
+                <label class="col-form-label">Kayıt Tarihi:</label>
+                <div>@Model.KayitTarihi</div>
+                <input asp-for="KayitTarihi" class="alert-danger form-control hide" readonly />
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Değiştirme Tarihi:</label>
+                <div>@DateTime.Now</div>
+                <input asp-for="DegTarihi" value="@DateTime.Now" class="alert-danger form-control hide" readonly />
+            </div>
+        </div>
+    </div>
+    <hr />
+
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="container">
+        <div class="form-row">
+            <div class="col-xs-3">
+                <label for="sube-adi" class="col-form-label">Şube Adı:</label>
+                <input asp-for="SubeAdi" class="form-control" />
+                <span asp-validation-for="SubeAdi" class="text-danger"></span>
+            </div>
+
+
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Şube No:</label>
+                    <input asp-for="SubeNo" class="alert-danger form-control" readonly />
+                </div>
+            </div>
+
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Tarihi:</label>
+                    <input asp-for="KayitTarihi" class="alert-danger form-control" readonly />
+
+                    <label class="col-form-label">Değiştirme Tarihi:</label>
+                    <input asp-for="DegTarihi" value="@DateTime.Now" class="alert-danger form-control" readonly />
+                </div>
+            </div>
+        </div>
+    </div><hr />
+
+    <div class="container">
+        <div class="col-xs-3">
+            <label class="col-form-label">Ülke:</label>
+            <input asp-for="Ulke" class="form-control" readonly />
+
+        </div>
+        <div class="col-xs-3">
+            <label class="control-label">Şehir:</label>
+            <input asp-for="Sehir" class="form-control" />
+            <span asp-validation-for="Sehir" class="text-danger"></span>
+        </div>
+    </div><hr />
+
+    <div class="container">
+        <div class="col-xs-6">
+            <label class="col-form-label">Adres:</label>
+            <textarea asp-for="Adres" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Adres" class="text-danger"></span>
+        </div>
+    </div><hr />
+    <div class="container">
+        <div class="col-xs-6">
+            <label class="col-form-label">Email:</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div><hr />
+    <div class="container">
+        <div class="col-xs-3">
+            <label class="col-form-label">Tel No:</label>
+            <input asp-for="TelNo" class="form-control" maxlength="13" />
+            <span asp-validation-for="TelNo" class="text-danger"></span>
+        </div>
+        <div class="col-xs-3">
+            <label class="col-form-label">Posta Kodu:</label>
+            <input asp-for="PostaKodu" class="form-control" />
+            <span asp-validation-for="PostaKodu" class="text-danger"></span>
+        </div>
+    </div><hr />
+
+    <div class="container">
+        <div class="col-xs-3">
+        </div>
+        <div class="col-xs-3" style="text-align:right">
+
+            <input type="submit" value="Güncelle" class="btn btn-primary w-75 text-right" />
+        </div>
+    </div><hr />
+    <div class="container">
+        <div class="col-xs-3">
+        </div>
+        <div class="col-xs-3" style="text-align:right">
+            <a asp-controller="Sube" asp-action="SubeListesi" class="btn btn-warning" style="margin-top:15px">Şube Listesi</a>
+        </div>
+    </div><hr />
+</form>
+
+
+
+@section Scripts
+    {
+    <script>
+        function correctPhoneNo() {
+            $("#TelNo").keyup(function () {
+                $(this).val($(this).val().replace(/^(\d{3})(\d{3})(\d)+$/, "($1)$2-$3"));
+            });
+
+            $("#TelNo").keydown(function (e) {
+                var key = e.charCode || e.keyCode || 0;
+                // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                // home, end, period, and numpad decimal
+                return (
+                    key == 8 ||
+                    key == 9 ||
+                    key == 13 ||
+                    key == 46 ||
+                    key == 190 ||
+                    (key >= 35 && key <= 40) ||
+                    (key >= 48 && key <= 57) ||
+                    (key >= 96 && key <= 105));
+            });
+        };
+        window.onload(correctPhoneNo());
+    </script>
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

@@ -1,0 +1,172 @@
+﻿@model StockControl.Models.TFaturaGiris[];
+@using System.Globalization;
+
+    <h2 style="text-align:left" class="alert alert-danger">
+        Silmek istediğinizden emin misiniz?
+
+    </h2>
+    <div>
+        <div class="container">
+            <div class="col-xs-3">
+                <h4>Fatura Bilgileri</h4>
+            </div>
+            <div class="col-xs-3"></div>
+            <div class="col-xs-3" style="margin-top:15px">
+                <div>
+                    <label class="col-form-label">Kayıt Oluşturan:</label>
+                    @Html.DisplayFor(model => model.ElementAt(0).KayitKadi)
+                </div>
+                <div>
+                    <label class="col-form-label">Kayıt Değiştiren:</label>
+                    @Html.DisplayFor(model => model.ElementAt(0).DegKadi)
+                </div>
+                <div>
+                    <label class="col-form-label">Kayıt Tarihi:</label>
+                    @Html.DisplayFor(model => model.ElementAt(0).KayitTarihi)
+                </div>
+                <div>
+                    <label class="col-form-label">Değiştirme Tarihi:</label>
+                    @Html.DisplayFor(model => model.ElementAt(0).DegTarihi)
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="container">
+
+            <div class="form-row">
+                <div class="col-xs-5">
+                    <dl class="dl-horizontal">
+                        <dt>
+                            Şube No:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.ElementAt(0).SubeNo)
+                        </dd>
+                        <dt>
+                            Fatura No:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.ElementAt(0).FaturaNo)
+                        </dd>
+                        <dt>
+                            Fatura Tarihi:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.ElementAt(0).FaturaTarihi)
+                        </dd>
+                        <dt>
+                            İrsaliye No:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.ElementAt(0).IrsaliyeNo)
+                        </dd>
+                        <dt>
+                            İrsaliye Tarihi:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.ElementAt(0).IrsaliyeTarihi)
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col-xs-4">
+                    <table class="table" id="table-total">
+                        <tbody>
+                            <tr>
+                                <td class="col-xs-3">KDV Hariç Toplam:</td>
+                                <td class="col-xs-1"><b><span id="input-KDVHaricTutar" readonly>@Model.Sum(x => x.KdvsizToplam).ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</span></b></td>
+                            </tr>
+                            <tr>
+                                <td class="col-xs-3">KDV Tutarı:</td>
+                                <td class="col-xs-1"><b><span id="input-toplamKDVTutar" readonly>@Model.Sum(x => x.KdvTutar).ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</span></b></td>
+                            </tr>
+                            <tr>
+                                <td class="col-xs-3">KDV Dahil Toplam:</td>
+                                <td class="col-xs-1"><b><span id="input-KDVDahilTutar" readonly>@Model.Sum(x => x.KdvliToplamTutar).ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</span></b></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>
+                        Sıra No:
+                    </th>
+                    <th>
+                        Ürün Adı:
+                    </th>
+                    <th>
+                        Ürün No:
+                    </th>
+                    <th>
+                        Miktar:
+                    </th>
+                    <th>
+                        Birim:
+                    </th>
+                    <th>
+                        Br. Fiyat:
+                    </th>
+                    <th>
+                        Kur:
+                    </th>
+                    <th>
+                        % Kdv:
+                    </th>
+                    <th>
+                        Alt Kategori:
+                    </th>
+                    <th>
+                        Kategori:
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Length; i++)
+                {
+                    <tr>
+                        <td>@(i + 1)</td>
+
+
+                        <td>@Html.DisplayFor(model => model.ElementAt(i).UrunAdi)</td>
+
+
+                        <td>@Html.DisplayFor(model => model.ElementAt(i).UrunNo)</td>
+
+
+                        <td>@Html.DisplayFor(model => model.ElementAt(i).UrunMiktari)</td>
+
+
+                        <td>@Html.DisplayFor(model => model.ElementAt(i).MiktarBirimi)</td>
+
+
+                        <td>@Html.DisplayFor(model => model.ElementAt(i).BirimFiyatı)</td>
+
+
+                        <td>@Html.DisplayFor(model => model.ElementAt(i).FiyatKurTipi)</td>
+
+
+                        <td>@Html.DisplayFor(model => model.ElementAt(i).KdvYuzde)</td>
+
+
+                        <td>@Html.DisplayFor(model => model.ElementAt(i).UrunAltKategori)</td>
+
+
+                        <td>@Html.DisplayFor(model => model.ElementAt(i).UrunKategori)</td>
+                    </tr>
+                }
+
+
+
+
+            </tbody>
+        </table>
+
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="@Model.ElementAt(0).FaturaNo" />
+            <input type="submit" value="Sil" class="btn btn-danger" />
+            <a asp-action="FaturaListesi" class="btn btn-warning">Fatura Listesi</a>
+        </form>
+    </div>

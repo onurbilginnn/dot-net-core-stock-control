@@ -1,0 +1,1093 @@
+﻿@model StockControl.Models.TUrunListesi[]
+@using Microsoft.AspNetCore.Http
+
+<style>
+
+    .modal.modal-fullscreen .modal-dialog,
+    .modal.modal-fullscreen .modal-content {
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+
+    .modal.modal-fullscreen .modal-dialog {
+        margin: 0;
+        width: 100%;
+    }
+
+    .modal.modal-fullscreen .modal-content {
+        border: none;
+        -moz-border-radius: 0;
+        border-radius: 0;
+        -webkit-box-shadow: inherit;
+        -moz-box-shadow: inherit;
+        -o-box-shadow: inherit;
+        box-shadow: inherit;
+    }
+
+    .modal.modal-fullscreen.force-fullscreen {
+        /* Remove the padding inside the body */
+    }
+
+        .modal.modal-fullscreen.force-fullscreen .modal-body {
+            padding: 0;
+        }
+
+        .modal.modal-fullscreen.force-fullscreen .modal-header,
+        .modal.modal-fullscreen.force-fullscreen .modal-footer {
+            left: 0;
+            position: absolute;
+            right: 0;
+        }
+
+        .modal.modal-fullscreen.force-fullscreen .modal-header {
+            top: 0;
+        }
+
+        .modal.modal-fullscreen.force-fullscreen .modal-footer {
+            bottom: 0;
+        }
+</style>
+<form>
+    <div class="container">
+        <div class="form-row">
+            <div class="col-xs-3">
+                <h4>Yeni Reçete Oluştur</h4>
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Şube No:</label>
+                <div id="SubeNoEnter" readonly>@Context.Session.GetString("SubeNo")</div>
+            </div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Oluşturan:</label>
+                    <div id="input-kayitOlusturan">@Context.Session.GetString("User")</div>
+                </div>
+            </div>
+        
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-5"></div>
+        <div class="float-right">
+            <div class="col-xs-2">
+                <label class="col-form-label">Kayıt Tarihi:</label>
+                <div id="input-kayitTarihi">@DateTime.Now.ToShortDateString()</div>
+            </div>
+        </div>
+    </div>
+    <hr />
+
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="container table-bordered">
+
+        <div class="container">
+            <div class="col-xs-5">
+                <h5 class="text-danger">Nihai Ürün</h5>
+            </div>
+        </div>
+        <div class="container">
+
+            <div class="col-xs-3">
+                <label class="col-form-label">Ürün Adı:</label>
+                <select class="selectpicker" id="NihaiUrunAdi" title="Seçiniz..." onchange="FindRelated()" data-live-search="true"></select>
+                <span class="text-danger" id="span-NihaiUrunAdi"></span>
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Ürün Miktarı:</label>
+                <input class="form-control" id="NihaiUrunMiktari" onchange="QuantityFonk()">
+                <span class="text-danger" id="span-NihaiUrunMiktari"></span>
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Br:</label>
+                <input class="form-control alert-danger" id="NihaiUrunMiktarBr" readonly>
+            </div>
+        </div>
+        <div class="container">
+            <div class="col-xs-2">
+                <label class="col-form-label">Ürün Seviyesi:</label>
+                <input class="form-control alert-danger" id="NihaiUrunSeviyesi" readonly>
+            </div>
+            <div class="col-xs-1"></div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Ürün No:</label>
+                <input class="form-control alert-danger" id="NihaiUrunNo" readonly>
+            </div>
+
+
+            <div class="col-xs-2">
+                <label class="col-form-label">Maliyet:</label>
+                <input class="form-control alert-danger" id="NihaiUrunMaliyeti" readonly>
+            </div>
+            <div class="col-xs-1">
+                <label class="col-form-label">Kur:</label>
+                <input class="form-control alert-danger" id="NihaiUrunMaliyetKur" readonly>
+            </div>
+
+        </div>
+        <div class="container" style="margin-bottom:25px;margin-top:15px">
+            <div class="col-xs-6 ">
+                <a class="btn btn-success" id="a-receteOlustur">Reçete Oluştur</a>
+                <div class="btn btn-success hidden" data-toggle="modal" data-target="#modal-urunler"
+                     data-dismiss="modal" id="div-mazlEkle" onclick="showList(this)">Malzeme Ekle</div>
+            </div>
+            <div class="col-xs-5 "></div>
+            <div class="col-xs-3 table-bordered text-center" style="padding:5px">
+                <div class="bg-danger"><b>SON 6(ALTI) AY</b></div>
+                <b>Maliyet Hesabı Yöntemi:</b><br />
+                <label class="radio-inline"><input type="radio" name="radio-cost" value="Max">Max</label>
+                <label class="radio-inline"><input type="radio" name="radio-cost" value="Avg" checked>Avg</label>
+                <label class="radio-inline"><input type="radio" name="radio-cost" value="Min">Min</label>
+            </div>
+
+        </div>
+
+
+
+    </div>
+    <table id="table-recete" hidden>
+        <thead>
+            <tr>
+                <th class="w-50"></th>
+                <th class="col-xs-3">Ürün Adı</th>
+                <th class="col-xs-3">Ürün No</th>
+                <th class="col-xs-2">Ürün Seviyesi</th>
+                <th class="col-xs-1">Fire Oranı %</th>
+                <th class="col-xs-1">Miktar</th>
+                <th class="col-xs-1">Fireli Miktar</th>
+                <th class="col-xs-2">Miktar Birim</th>
+                <th class="col-xs-3" id="th-maliyet">Br.Maliyet</th>
+                <th class="col-xs-1">Maliyet TL</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</form>
+<form asp-controller="BOM" asp-action="ReceteUrunler">
+    <div class="modal fade modal-fullscreen" id="modal-urunler" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title text-center" id="modal-urunler">Malzeme Listesi</h4>
+                </div>
+                <div class="modal-body">
+
+                    <table class="table table-striped" style="width:100%" id="modal-body-table">
+                        <thead>
+                            <tr>
+                                <th class="col-xs-2">
+                                    Ürün Adı
+                                </th>
+                                <th class="col-xs-3">
+                                    Ürün No
+                                </th>
+                                <th class="col-xs-2">
+                                    Ürün Kategori
+                                </th>
+                                <th class="col-xs-2">
+                                    Miktar Birimi
+                                </th>
+                                <th class="col-xs-2">
+                                    Ürün Seviyesi
+                                </th>
+                                <th class="col-xs-2">
+                                    Ekle
+                                </th>
+                            </tr>
+                        </thead>
+
+                    </table>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="col-xs-5 bg-danger" style="text-align:left"><h4><b>UYARI: </b>Reçetesi yapılmamış ara ürünler listede gözükmemektedir!!!</h4></div>
+                    <button type="button" id="modal-closeBtn" class="btn btn-danger" data-dismiss="modal">Kapat</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<div class="container">
+    <div class="col-xs-1">
+        <input id="input-kaydet" class="btn btn-primary w-75 text-right " type="submit" value="Kaydet" style="margin-top:15px" onclick="CreateEntity()" disabled />
+    </div>
+
+    <div class="col-xs-2">
+        <a asp-controller="BOM" asp-action="BOMListesi" class="btn btn-warning" style="margin-top:15px">Reçete Listesi</a>
+
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/css/bootstrap-select.css" />
+<link rel="stylesheet" href="~/css/datepicker.css" />
+<link rel="stylesheet" href="~/css/dataTables.bootstrap.min.css" />
+
+
+
+
+@section Scripts {
+
+    <script src="~/js/jquery1_11_3.min.js"></script>
+    <script src="~/js/jquery.dataTables.min.js"></script>
+    <script src="~/js/dataTables.bootstrap.min.js"></script>
+    <script src="~/js/dataTables.buttons.min.js"></script>
+    <script src="~/js/buttons.bootstrap.min.js"></script>
+    <script src="~/js/bootstrap-select.js"></script>
+    <script src="~/plugin/dataTable_JumpToDatatable.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        var urunAdiList = [];
+        var priceList = [];
+        var prices = [];
+        var say = 0;
+
+
+        function onLoad() {
+            $("#NihaiUrunMiktari").keydown(function (e) {
+                var key = e.charCode || e.keyCode || 0;
+                // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                // home, end, period, and numpad decimal
+                return (
+                    key == 8 ||
+                    key == 9 ||
+                    key == 13 ||
+                    key == 46 ||
+                    key == 190 ||
+                    (key >= 35 && key <= 40) ||
+                    (key >= 48 && key <= 57) ||
+                    (key >= 96 && key <= 105));
+            });
+            var subeNo = $("#SubeNoEnter").text();
+            $('#NihaiUrunAdi').empty();
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "GET",
+                url: "/BOM/GetUrunList",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+
+            }).done(function (data) {
+                urunAdiList = JSON.parse(data);
+                for (var i = 0; i < urunAdiList.length; i++) {
+                    if (urunAdiList[i].SubeNo == subeNo && (urunAdiList[i].UrunSeviyesi == "1 - Bitmiş Ürün" || urunAdiList[i].UrunSeviyesi == "2 - Ara Ürün"))
+                        $('#NihaiUrunAdi').append('<option data-subtext="' + urunAdiList[i].UrunSeviyesi + '">' + urunAdiList[i].UrunAdi + '</option>').selectpicker('refresh');
+                }
+
+            });
+            var sayi = 0;
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "GET",
+                url: "/BOM/GetPriceList",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+
+            }).done(function (data) {
+                prices = JSON.parse(data);
+                for (var i = 0; i < prices.length; i++) {
+                    if (prices[i].SubeNo == subeNo) {
+                        priceList[sayi] = prices[i];
+                        sayi++;
+                    }
+                }
+
+            });
+
+            $('#modal-body-table').DataTable({
+                "bLengthChange": false,
+                "retrieve": true,
+                "language": {
+                    "searchPlaceholder": "Malz. Adı",
+                    "search": "Ara: ",
+                    "sInfo": "<b>Toplam: _TOTAL_ adedin _START_ - _END_ aralığı gösterilmektedir.</b>",
+                    "infoFiltered": "( _MAX_ adet kayıttan bulundu)",
+                    "infoEmpty": " 0 kayıt bulundu.",
+                    "paginate": {
+                        "previous": "Önceki",
+                        "next": "Sonraki",
+                        "last": "Son",
+                        "first": "İlk",
+                    }
+                },
+
+                "pageLength": 5,
+                "ordering": false,
+            });
+            $("#input-" + rowNo + "qty").keydown(function (e) {
+                var key = e.charCode || e.keyCode || 0;
+                // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                // home, end, period, and numpad decimal
+                return (
+                    key == 8 ||
+                    key == 9 ||
+                    key == 13 ||
+                    key == 46 ||
+                    key == 190 ||
+                    (key >= 35 && key <= 40) ||
+                    (key >= 48 && key <= 57) ||
+                    (key >= 96 && key <= 105));
+            });
+
+
+        }
+        window.onload(onLoad());
+    </script>
+    <script>
+        function FindRelated() {
+            $("#span-NihaiUrunAdi").empty();
+            var key = $('#NihaiUrunAdi').val();
+            for (var i = 0; i < urunAdiList.length; i++) {
+                if (urunAdiList[i].UrunAdi == key) {
+                    $('#NihaiUrunSeviyesi').val(urunAdiList[i].UrunSeviyesi);
+                    $('#NihaiUrunNo').val(urunAdiList[i].UrunNo);
+                    $('#NihaiUrunMiktarBr').val(urunAdiList[i].MiktarBirimi);
+                    $('#NihaiUrunMaliyetKur').val("TL");
+                }
+            }
+
+        }
+
+        $('#a-receteOlustur').click(function CreateTable() {
+
+            if (CreateTableCTRL() != -1) {
+                $("#SubeNoEnter").prop('disabled', true).selectpicker('refresh');
+
+                $("#NihaiUrunAdi").prop('disabled', true).selectpicker('refresh');
+                $('#NihaiUrunMiktari').prop('disabled', true);
+                $("#table-recete").removeAttr("hidden");
+                $("#div-mazlEkle").removeClass('hidden');
+                $('#a-receteOlustur').attr("disabled", "disabled");
+
+            }
+
+        });
+
+        function CreateTableCTRL() {
+            var subeNoEnter = $("#SubeNoEnter").text();
+            var nihaiUrunAdi = $("#NihaiUrunAdi").val();
+            var nihaiUrunMik = $('#NihaiUrunMiktari').val();
+
+            if (subeNoEnter == "" && nihaiUrunAdi == "" && nihaiUrunMik == "") {
+                $("#span-SubeNoEnter").html("Şube No seçiniz...");
+                $("#span-NihaiUrunAdi").html("Ürün Adı seçiniz...");
+                $("#span-NihaiUrunMiktari").html("Ürün Miktarı giriniz...");
+                return -1;
+            }
+            else if (subeNoEnter == "" && nihaiUrunAdi == "") {
+                $("#span-SubeNoEnter").html("Şube No seçiniz...");
+                $("#span-NihaiUrunAdi").html("Ürün Adı seçiniz...");
+                return -1;
+            }
+            else if (subeNoEnter == "" && nihaiUrunMik == "") {
+                $("#span-SubeNoEnter").html("Şube No seçiniz...");
+                $("#span-NihaiUrunMiktari").html("Ürün Miktarı giriniz...");
+                return -1;
+            }
+            else if (nihaiUrunAdi == "" && nihaiUrunMik == "") {
+                $("#span-NihaiUrunAdi").html("Ürün Adı seçiniz...");
+                $("#span-NihaiUrunMiktari").html("Ürün Miktarı giriniz...");
+                return -1;
+            }
+            else if (subeNoEnter == "") {
+                $("#span-SubeNoEnter").html("Şube No seçiniz...");
+                return -1;
+            }
+            else if (nihaiUrunAdi == "") {
+                $("#span-NihaiUrunAdi").html("Ürün Adı seçiniz...");
+                return -1;
+            }
+
+            else if (nihaiUrunMik == "") {
+                $("#span-NihaiUrunMiktari").html("Ürün Miktarı giriniz...");
+                return -1;
+            }
+        }
+        function QuantityFonk() {
+            $('#span-NihaiUrunMiktari').empty();
+        }
+
+        function showList(x) {
+           
+            if (say == 0) {
+                var sentData = {};
+                var ajaxPOST = $('#SubeNoEnter').text();
+                sentData.SubeNo = ajaxPOST;
+                $.ajax({
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    type: "POST",
+                    url: "/BOM/ReceteUrunler",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(sentData),
+                    dataType: "json"
+                }).done(function (data) {
+                    var arr = JSON.parse(data);
+                    var arr2 = [];
+                    var arr2Say = 0;
+
+                    for (var j = 0; j < arr.length; j++) {
+                        if (arr[j].UrunSeviyesi != "2 - Ara Ürün") {
+                            arr2[arr2Say] = arr[j];
+                            arr2Say++;
+                        }
+                    }
+
+                    if ($('#NihaiUrunSeviyesi').val() == "1 - Bitmiş Ürün") {//MODAL
+                        for (var i = 0; i < arr.length; i++) {
+                            $('#modal-body-table').dataTable().fnAddData([
+                                arr[i].UrunAdi, arr[i].UrunNo, arr[i].UrunKategori, arr[i].MiktarBirimi, arr[i].UrunSeviyesi,
+                                "<div onclick='addRow(this)' id='div-" + arr[i].UrunNo + "-ekleBtn' class='btn btn-primary'>Ekle</div>"
+                            ]);
+
+                        }//for
+                    }
+                    else {
+                        for (var t = 0; t < arr2.length; t++) {//MODAL
+                            $('#modal-body-table').dataTable().fnAddData([
+                                arr2[t].UrunAdi, arr2[t].UrunNo, arr2[t].UrunKategori, arr2[t].MiktarBirimi, arr2[t].UrunSeviyesi,
+                                "<div onclick='addRow(this)' id='div-" + arr2[t].UrunNo + "-ekleBtn' class='btn btn-primary'>Ekle</div>"
+                            ]);
+                        }//for
+
+                    }
+                });
+            }
+            say++;
+        }
+        var rowNo = 1;
+
+        function addRow(x) {
+            $('#input-kaydet').removeAttr('disabled');
+            var subeNo = $("#SubeNoEnter").text();
+            var urunAdi = "";
+            var urunNo = "";
+            var urunSev = "";
+            var mikBr = "";
+            var fire = 0;
+            var priceArr = [];
+            var say = 0;
+
+            var data = $(x).closest('tr').find('td');
+            urunAdi = data.eq(0).text();
+            urunNo = data.eq(1).text();
+            urunSev = data.eq(4).text();
+            mikBr = data.eq(3).text();
+
+            for (var i = 0; i < priceList.length; i++) {
+                if (priceList[i].UrunNo == urunNo && priceList[i].BirimFiyatı != 0) {
+                    priceArr[say] = parseFloat(priceList[i].BirimFiyatı);
+
+                    say++;
+
+                }
+            }
+            if (urunSev != "2 - Ara Ürün") {
+                if (jQuery.isEmptyObject(priceArr)) {
+                    alert(urunAdi + " için fatura bilgisi yoktur!!!");
+                    calcType = -1;
+
+                }
+                else {
+                    var max = Math.max.apply(null, priceArr);
+                    var min = Math.min.apply(null, priceArr);
+                    var avg = 0;
+                    for (var i = 0; i < priceArr.length; i++) {
+                        avg += priceArr[i];
+                    }
+                    avg /= priceArr.length;
+                    var calcType = $('input[type=radio][name=radio-cost]:checked').val();
+                }
+                avg = parseFloat(avg).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                min = parseFloat(min).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                max = parseFloat(max).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                $("#table-recete > tbody").append("<tr>");
+                $("#table-recete > tbody").append("<td class='td-delete' id='td-" + rowNo + "delete'><div class='btn btn-warning' id='div-" + rowNo + "delete' onclick='deleteRow(this)'>Sil</div></td>");
+                $("#table-recete > tbody").append("<td class='col-xs-3 td-urunAdi' id='td-" + rowNo + "urunAdi'>" + urunAdi + "</td>");
+                $("#table-recete > tbody").append("<td class='col-xs-2 td-urunNo' id='td-" + rowNo + "UrunNo'>" + urunNo + "</td>");
+                $("#table-recete > tbody").append("<td class='col-xs-2 td-urunSev' id='td-" + rowNo + "urunSev'>" + urunSev + "</td>");
+                $("#table-recete > tbody").append("<td class='td-fire' id='td-" + rowNo + "fire'><input onchange='AddFire(this)' class='form-control input-fire' type='number' min='0' max='100' value='0' readonly/></td>");
+                $("#table-recete > tbody").append("<td class='col-xs-1 td-qty'> <input class='form-control input-qty' onblur='CalcCost(this)' id='input-" + rowNo + "qty'/>"
+                );
+                $("#table-recete > tbody").append("<td class='col-xs-2 td-fireliMik' id='td-" + rowNo + "fireliMik'></td>");
+                $("#input-" + rowNo + "qty").keydown(function (e) {
+                    var key = e.charCode || e.keyCode || 0;
+                    // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                    // home, end, period, and numpad decimal
+                    return (
+                        key == 8 ||
+                        key == 9 ||
+                        key == 13 ||
+                        key == 46 ||
+                        key == 190 ||
+                        (key >= 35 && key <= 40) ||
+                        (key >= 48 && key <= 57) ||
+                        (key >= 96 && key <= 105));
+                });
+                $("#table-recete > tbody").append("<td class='col-xs-2 td-mikBr' id='td-" + rowNo + "mikBr'>" + mikBr + "</td>");
+                switch (calcType) {
+                    case "Avg":
+                        $("#table-recete > tbody").append("<td class='col-xs-3 td-price' id='td-" + rowNo + "price'>" + avg + "</td>");
+                        break;
+                    case "Min":
+                        $("#table-recete > tbody").append("<td class='col-xs-3 td-price' id='td-" + rowNo + "price'>" + min + "</td>");
+                        break;
+                    case "Max":
+                        $("#table-recete > tbody").append("<td class='col-xs-3 td-price' id='td-" + rowNo + "price'>" + max + "</td>");
+                        break;
+                    default:
+                        $("#table-recete > tbody").append("<td class='col-xs-3 td-price' id='td-" + rowNo + "price'>0</td>");
+                        break;
+                }
+                $("#table-recete > tbody").append("<td class='col-xs-1 td-cost' id='td-" + rowNo + "cost'></td>");
+
+                $("#table-recete > tbody").append("</tr>");
+                rowNo++;
+            }
+            else {
+                AraUrunRow(urunNo, urunAdi, urunSev, mikBr);
+
+            }
+            $("#modal-closeBtn").trigger("click");
+            $(x).text("Eklendi");
+            $(x).removeClass("btn btn-primary");
+            $(x).addClass("btn btn-danger");
+            $(x).attr("disabled", true);
+            $(x).removeAttr('onclick');
+        }
+
+        function deleteRow(e) {
+            var rowString = $(e).attr('id');
+
+            var rowNumber = "";
+            for (var i = 0; i < rowString.length; i++) {
+                if ($.isNumeric(rowString[i]))
+                    rowNumber += rowString[i];
+            }
+            var urunNo = $('#td-' + rowNumber + 'UrunNo').text();
+            var table = $('#modal-body-table').DataTable();
+            table.page.jumpToData(urunNo, 1);
+
+            $("#div-" + urunNo + "-ekleBtn").text('Ekle');
+            $("#div-" + urunNo + "-ekleBtn").removeClass('btn btn-danger');
+            $("#div-" + urunNo + "-ekleBtn").addClass('btn btn-primary');
+            $("#div-" + urunNo + "-ekleBtn").attr('disabled', false);
+            $("#div-" + urunNo + "-ekleBtn").attr('onclick', 'addRow(this)');
+            $('#td-' + rowNumber + 'delete').remove();
+            $('#td-' + rowNumber + 'urunAdi').remove();
+            $('#td-' + rowNumber + 'UrunNo').remove();
+            $('#td-' + rowNumber + 'urunSev').remove();
+            $('#td-' + rowNumber + 'fire').remove();
+            $('#input-' + rowNumber + 'qty').parent().remove();
+            $('#td-' + rowNumber + 'fireliMik').remove();
+            $('#td-' + rowNumber + 'mikBr').remove();
+            $('#td-' + rowNumber + 'price').remove();
+            $('#td-' + rowNumber + 'cost').remove();
+            $('.tr-' + rowNumber + 'araUrun').remove();
+
+            $('input[type=radio][value=Max]').trigger("change");
+        };
+
+        function AraUrunRow(urunNo, urunAdi, urunSev, mikBr) {
+
+            var calcType = $('input[type=radio][name=radio-cost]:checked').val();
+            var araUrMaliyet = 0;
+            var avg = 0;
+            var max = 0;
+            var min = 0;
+            var sum = 0;
+            var fiyatList = [];
+            var say = 0;
+            var araUrArr = [];
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "POST",
+                url: "/BOM/GetAraUrunList",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(urunNo),
+                dataType: "json",
+
+            }).done(function (data) {
+                araUrArr = JSON.parse(data);
+
+                $("#table-recete > tbody").append("<tr>");
+                $("#table-recete > tbody").append("<td class='td-delete' id='td-" + rowNo + "delete'><div class='btn btn-warning' id='div-" + rowNo + "delete' onclick='deleteRow(this)'>Sil</div></td>");
+                $("#table-recete > tbody").append("<td class='col-xs-3 td-urunAdi' id='td-" + rowNo + "urunAdi'>" +
+                    "<div class='btn btn-default glyphicon-plus div-expand' id='div-" + rowNo + "expandBtn' onclick='ExpandRow(this)'></div>" + urunAdi + "</td>");
+                $("#table-recete > tbody").append("<td class='col-xs-2 td-urunNo' id='td-" + rowNo + "UrunNo'>" + urunNo + "</td>");
+                $("#table-recete > tbody").append("<td class='col-xs-2 td-urunSev' id='td-" + rowNo + "urunSev'>" + urunSev + "</td>");
+                $("#table-recete > tbody").append("<td class='td-fire' id='td-" + rowNo + "fire'><input onchange='AddFire(this)' class='form-control input-fire' type='number' min='0' max='100' value='0' readonly/></td>");
+                $("#table-recete > tbody").append("<td class='col-xs-1 td-qty'> <input class='form-control input-qty' onblur='CalcCost(this)' id='input-" + rowNo + "qty'/>"
+                );
+                $("#table-recete > tbody").append("<td class='col-xs-2 td-fireliMik' id='td-" + rowNo + "fireliMik'></td>");
+                $("#input-" + rowNo + "qty").keydown(function (e) {
+                    var key = e.charCode || e.keyCode || 0;
+                    // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                    // home, end, period, and numpad decimal
+                    return (
+                        key == 8 ||
+                        key == 9 ||
+                        key == 13 ||
+                        key == 46 ||
+                        key == 190 ||
+                        (key >= 35 && key <= 40) ||
+                        (key >= 48 && key <= 57) ||
+                        (key >= 96 && key <= 105));
+                });
+                $("#table-recete > tbody").append("<td class='col-xs-2 td-mikBr' id='td-" + rowNo + "mikBr'>" + mikBr + "</td>");
+                $("#table-recete > tbody").append("<td class='col-xs-3 td-price' id='td-" + rowNo + "price'>" + araUrMaliyet + "</td>");
+                $("#table-recete > tbody").append("<td class='col-xs-1 td-cost' id='td-" + rowNo + "cost'></td>");
+
+                $("#table-recete > tbody").append("</tr>");
+
+                var qty = $("#input-" + rowNo + "qty").val();
+                for (var i = 0; i < araUrArr.length; i++) {
+                    for (var j = 0; j < priceList.length; j++) {
+                        if (priceList[j].UrunNo == araUrArr[i].UrunNo && priceList[j].BirimFiyatı != 0) {
+                            fiyatList[say] = parseFloat(priceList[j].BirimFiyatı);
+                            say++;
+                        }
+                    }
+
+                    for (var k = 0; k < fiyatList.length; k++) {
+                        avg += fiyatList[k];
+                    }
+
+                    if (avg != 0) {
+                        avg /= fiyatList.length;
+                        max = Math.max.apply(null, fiyatList);
+                        min = Math.min.apply(null, fiyatList);
+                    }
+
+                    var araQty = parseFloat(araUrArr[i].UrunMiktari);
+                    var result = 0;
+                    var brResult = 0;
+                    avg = parseFloat(avg).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                    min = parseFloat(min).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                    max = parseFloat(max).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                    araQty = parseFloat(araQty).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+
+                    switch (calcType) {
+                        case "Avg":
+                            brResult = avg;
+                            result = avg * araQty;
+                            break;
+                        case "Min":
+                            brResult = min;
+                            result = min * araQty;
+                            break;
+                        case "Max":
+                            brResult = max;
+                            result = max * araQty;
+                            break;
+                    };
+                    $("#table-recete > tbody").append("<tr class='collapse out bg-warning small tr-" + rowNo + "araUrun'>" +
+                        "<td><div></div></td>" +
+                        "<td><div>" + araUrArr[i].UrunAdi + "</div></td>" +
+                        "<td><div class='araUrunHammaddeUrunNo'>" + araUrArr[i].UrunNo + "</div></td>" +
+                        "<td><div>" + araUrArr[i].UrunSeviyesi + "</div></td>" +
+                        "<td class='td-" + urunNo + "-hammaddeFireOnload hide'>" + araUrArr[i].FireOrani + "</td>" +
+                        "<td class='td-" + urunNo + "-hammaddeFire'>" + araUrArr[i].FireOrani + "</td>" +
+                        "<td><div class='araUrunHammaddeMiktar'>" + 0 + " (" + araUrArr[i].UrunMiktari + "/br)" + "</div></td>" +
+                        "<td class='td-" + urunNo + "-hammaddeFireliMiktar'></td>" +
+                        "<td><div>" + araUrArr[i].MiktarBirimi + "</div></td>" +
+                        "<td><div class='araUrunHammaddeBrFiyat'>" + result + " (" + brResult + "/br)" + "</div></td>" +
+                        "<td><div class='araUrunHammaddeToplamMaliyet'></div></td>" +
+                        "</tr>");
+                    araUrMaliyet += parseFloat(result);
+
+                    say = 0;
+                    fiyatList = [];
+                    avg = 0;
+
+                }
+                $('#td-' + rowNo + 'price').text(araUrMaliyet);
+                rowNo++;
+            });
+
+        }
+
+        function AddFire(e) {
+            var urunMik = parseFloat($(e).parent().next().find('.input-qty').val());
+            var araUrNo = $(e).parent().prev().prev().text();
+            var enAltQty = "";
+            var enAltQtyString = "";
+            var fireOrani = parseFloat($(e).val()) / 100;
+            var fireliMik = urunMik + urunMik * fireOrani;
+            var hamFire = [];   //YENİİİİİ
+            var hamFireSay = 0;//YENİİİİİ
+            $(".td-" + araUrNo + "-hammaddeFireOnload").each(function () {
+                hamFire[hamFireSay] = parseFloat($(this).text());
+                hamFireSay++;
+            });
+            hamFireSay = 0;
+            $(".td-" + araUrNo + "-hammaddeFireliMiktar").each(function () {
+                var araFire = $(e).val();
+
+                var hamFireSonuc = parseFloat(hamFire[hamFireSay]) * (1 + parseFloat(araFire) / 100);//YENİİİİİ
+                hamFireSonuc = parseFloat(hamFireSonuc).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                $(this).prev().prev().text(hamFireSonuc);
+                enAltQtyString = $(this).prev().find('div').text();
+                for (var i = 0; i < enAltQtyString.length; i++) {
+                    if (enAltQtyString[i] != " ")
+                        enAltQty += enAltQtyString[i];
+                    else
+                        break;
+                }
+                enAltQty = parseFloat(enAltQty);
+                var fireliSonuc = enAltQty * (1 + hamFireSonuc / 100);//YENİİİİİ
+                fireliSonuc = parseFloat(fireliSonuc).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                $(this).text(fireliSonuc);
+                enAltQty = "";
+                hamFireSay++;
+            })
+            fireliMik = parseFloat(fireliMik).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+            $(e).parent().next().next().text(fireliMik);
+            $('input[type=radio][name=radio-cost]').trigger("change");
+        }
+
+        function ExpandRow(e) {
+            var val = ($(e).attr('id')).toString();
+            if ($(e).hasClass('btn-default')) {
+                $(e).removeClass('btn-default');
+                $(e).addClass('btn-danger');
+                $(e).removeClass('glyphicon-plus');
+                $(e).addClass('glyphicon-minus');
+            }
+            else {
+                $(e).addClass('btn-default');
+                $(e).removeClass('btn-danger');
+                $(e).addClass('glyphicon-plus');
+                $(e).removeClass('glyphicon-minus');
+
+            }
+
+            var res = "";
+            for (var i = 0; i < val.length; i++) {
+                if ($.isNumeric(val[i]))
+                    res += val[i];
+            }
+
+            if ($(".tr-" + res + "araUrun").hasClass("out")) {
+                $(".tr-" + res + "araUrun").addClass("in");
+                $(".tr-" + res + "araUrun").removeClass("out");
+            } else {
+                $(".tr-" + res + "araUrun").addClass("out");
+                $(".tr-" + res + "araUrun").removeClass("in");
+            }
+
+        }
+
+        $('input[type=radio][name=radio-cost]').change(function () {
+            $('#div-yontemSec').hide();
+            $('#div-mazlEkle').removeClass('hide');
+            $('.input-fire').removeProp('disabled');
+            $('.input-qty').removeProp('disabled');
+            $('#NihaiUrunMiktari').removeProp('disabled');
+            $('.td-urunNo').each(function () {
+                var rowNumber = "";
+                var seviye = $(this).next('.td-urunSev').text();
+                var rowString = $(this).attr('id');
+
+                for (var i = 0; i < rowString.length; i++) {
+                    if ($.isNumeric(rowString[i]))
+                        rowNumber += rowString[i];
+                }
+                var fireOrani = 1 + parseFloat($(this).next().next().find('input').val()) / 100;
+                var urunNo = $(this).text();
+                var fiyatList = [];
+                var say = 0;
+                var avg = 0;
+                var max = 0;
+                var min = 0;
+                var sum = 0;
+                for (var i = 0; i < priceList.length; i++) {
+                    if (priceList[i].UrunNo == urunNo && priceList[i].BirimFiyatı != 0) {
+                        fiyatList[say] = parseFloat(priceList[i].BirimFiyatı);
+                        say++;
+                    }
+                }
+                for (var i = 0; i < fiyatList.length; i++) {
+                    avg += fiyatList[i];
+                }
+                if (avg != 0) {
+                    avg /= fiyatList.length;
+                    max = Math.max.apply(null, fiyatList);
+                    min = Math.min.apply(null, fiyatList);
+                }
+                fiyatList = [];
+                var qty = $("#input-" + rowNumber + "qty").val();
+
+                var calcType = $('input[type=radio][name=radio-cost]:checked').val();
+
+                avg = parseFloat(avg).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                min = parseFloat(min).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                max = parseFloat(max).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                if (seviye != "2 - Ara Ürün") {
+                    switch (calcType) {
+                        case "Avg":
+                            $("#td-" + rowNumber + "price").text(avg);
+                            sum = qty * avg * fireOrani;
+                            break;
+                        case "Min":
+                            $("#td-" + rowNumber + "price").text(min);
+                            sum = qty * min * fireOrani;
+                            break;
+                        case "Max":
+                            $("#td-" + rowNumber + "price").text(max);
+                            sum = qty * max * fireOrani;
+                            break;
+                    };
+                }
+                else {
+                    var araUrunBrFiyati = 0;
+                    var araFireOran = 0;
+                    $(".tr-" + rowNumber + "araUrun").find('.araUrunHammaddeBrFiyat').each(function () {
+                        var hamUrunNo = $(this).parent().parent().find('.araUrunHammaddeUrunNo').text();
+
+                        var hamFiyatList = [];
+                        var hamSay = 0;
+                        var hamMax = 0;
+                        var hamMin = 0;
+                        var hamAvg = 0;
+                        var hamSum = 0;
+                        for (var z = 0; z < priceList.length; z++) {
+                            if (priceList[z].UrunNo == hamUrunNo && priceList[z].BirimFiyatı != 0) {
+                                hamFiyatList[hamSay] = parseFloat(priceList[z].BirimFiyatı);
+                                hamSay++;
+                            }
+                        }
+                        for (var i = 0; i < hamFiyatList.length; i++) {
+                            hamAvg += hamFiyatList[i];
+                        }
+                        if (hamAvg != 0) {
+                            hamAvg /= hamFiyatList.length;
+                            hamMax = Math.max.apply(null, hamFiyatList);
+                            hamMin = Math.min.apply(null, hamFiyatList);
+                        }
+                        hamFiyatList = [];
+                        var araQtyString = $(this).parent().parent().find('.araUrunHammaddeMiktar').text().split(' ');
+                        var araQty = "";
+
+                        for (var i = 0; i < araQtyString[1].length; i++) {
+                            if ($.isNumeric(araQtyString[1][i]) || araQtyString[1][i] == ".")
+                                araQty += araQtyString[1][i];
+                        }
+
+                        var hamResult = 0;
+                        var hamBrResult = 0;
+                        var hamFireMiktar = parseFloat($(this).parent().prev().prev().text());
+                        var hamFireOran = parseFloat($(this).parent().prev().prev().prev().prev().text());
+                        hamFireOran = 1 + hamFireOran / 100;
+                        hamFireOran = parseFloat(hamFireOran).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        hamFireMiktar = parseFloat(hamFireMiktar).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        araQty = parseFloat(araQty).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        hamAvg = parseFloat(hamAvg).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        hamMin = parseFloat(hamMin).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        hamMax = parseFloat(hamMax).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+
+                        switch (calcType) {
+                            case "Avg":
+                                hamResult = hamAvg * hamFireOran * araQty;
+                                hamBrResult = hamAvg;
+                                break;
+                            case "Min":
+                                hamResult = hamMin * hamFireOran * araQty;
+                                hamBrResult = hamMin;
+                                break;
+                            case "Max":
+                                hamResult = hamMax * hamFireOran * araQty;
+                                hamBrResult = hamMax;
+                                break;
+
+                        };
+                        $(this).parent().parent().find('.araUrunHammaddeMiktar').text(qty * araQty + " (" + araQty + "/br)");
+
+
+                        var araFireOran = 1 + parseFloat($('#td-' + rowNumber + 'fire').find('input').val()) / 100;
+
+                        hamResult = parseFloat(hamResult).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        $(this).text(hamResult + " (" + hamBrResult + "/br)");
+                        araUrunBrFiyati += parseFloat(hamResult);
+
+                        araQty = "";
+                    });
+                    araUrunBrFiyati = parseFloat(araUrunBrFiyati).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                    $("#td-" + rowNumber + "price").text(araUrunBrFiyati);
+                    sum = araUrunBrFiyati * qty * fireOrani;
+
+
+
+                }//else
+
+                sum = parseFloat(sum).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                $("#td-" + rowNumber + "cost").text(sum);
+
+                sum = 0;
+
+            });
+            var costSum = 0;
+            $('.td-cost').each(function () {
+                costSum += parseFloat($(this).text());
+            });
+            costSum = parseFloat(costSum).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+            $('#NihaiUrunMaliyeti').val(costSum);
+        });
+        function CalcCost(e) {
+            var x = $(e).parent().prev().find('.input-fire');
+            x.removeProp('readonly');
+
+            AddFire(x);
+            $('input[type=radio][name=radio-cost]').trigger("change");
+            AddFire(x);
+        }
+       
+    </script>
+    <script>
+        function CreateEntity() {
+            var nihaiUrunSev = "";
+            var subeNo = "";//ok
+            var urunSeviye = "";//ok
+            var urunNo = "";//ok
+            var urunAdi = "";//ok
+            var urunMiktari = 0;//ok
+            var fireOrani = 0;
+            var fireliMiktar = 0;
+            var urunMiktarBirimi = "";//ok
+            var urunFiyatKurTipi = "";//ok
+            var urunBaglAraUrunNo = "";
+            var urunBaglAraUrunAdi = "";
+            var urunBaglBitUrunNo = "";
+            var urunBaglBitUrunAdi = "";
+            var urunBaglRefMik = 0;//ok
+            var kayitTarihi = "";//ok
+            var kayitKadi = "";
+
+            var jsonArr = {};
+            var jsonArrTotal = [];
+            var rowNo = "";
+            var rowString = "";
+            if (CTRL()) {
+                $("#table-recete > tbody").find('.input-qty').each(function () {
+
+                    rowString = $(this).attr('id');
+                    for (var i = 0; i < rowString.length; i++) {
+                        if ($.isNumeric(rowString[i]))
+                            rowNo += rowString[i];
+                    }
+
+                    nihaiUrunSev = $('#NihaiUrunSeviyesi').val();
+                    subeNo = $('#SubeNoEnter').text();
+                    kayitTarihi = $('#input-kayitTarihi').text();
+
+                    urunBaglRefMik = $('#NihaiUrunMiktari').val();
+                    if (nihaiUrunSev == "2 - Ara Ürün") {
+                        urunBaglAraUrunNo = $('#NihaiUrunNo').val();
+                        urunBaglAraUrunAdi = $('#NihaiUrunAdi').val();
+                    }
+                    else {
+                        urunBaglBitUrunNo = $('#NihaiUrunNo').val();
+                        urunBaglBitUrunAdi = $('#NihaiUrunAdi').val();
+
+                    }
+                    urunMiktari = $(this).val();
+
+                    urunFiyatKurTipi = $('#NihaiUrunMaliyetKur').val();
+
+                    urunAdi = $('#td-' + rowNo + 'urunAdi').text();
+
+                    urunNo = $('#td-' + rowNo + 'UrunNo').text();
+                    urunSeviye = $('#td-' + rowNo + 'urunSev').text();
+                    urunMiktarBirimi = $('#td-' + rowNo + 'mikBr').text();
+                    fireOrani = $('#td-' + rowNo + 'fire').find('input').val();
+                    fireliMiktar = $('#td-' + rowNo + 'fireliMik').text();
+                    kayitKadi = $('#input-kayitOlusturan').text();
+
+                    jsonArr.SubeNo = subeNo;
+                    jsonArr.UrunNo = urunNo;
+                    jsonArr.UrunAdi = urunAdi;
+                    jsonArr.UrunMiktari = urunMiktari;
+                    jsonArr.UrunSeviyesi = urunSeviye;
+                    jsonArr.MiktarBirimi = urunMiktarBirimi;
+                    jsonArr.FireOrani = fireOrani;
+                    jsonArr.FireliMiktar = fireliMiktar;
+                    jsonArr.FiyatKurTipi = urunFiyatKurTipi;
+                    jsonArr.KayitTarihi = kayitTarihi;
+                    jsonArr.BaglAraUrunNo = urunBaglAraUrunNo;
+                    jsonArr.BaglAraUrunAdi = urunBaglAraUrunAdi;
+
+                    jsonArr.BaglBitUrunNo = urunBaglBitUrunNo;
+                    jsonArr.BaglBitUrunAdi = urunBaglBitUrunAdi;
+                    jsonArr.BaglRefMik = urunBaglRefMik;
+                    jsonArr.KayitKadi = kayitKadi;
+
+                    jsonArrTotal.push(jsonArr);
+
+                    jsonArr = {};
+
+                    rowNo = "";
+                });
+
+                $.ajax({
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    type: "POST",
+                    url: "/BOM/BOMEkle",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(jsonArrTotal),
+                    dataType: "text",
+
+                }).done(function (message) {
+                    if (message) {
+                        alert(message); // display the error message in the span tag
+                    } else {
+                        window.location.href = '/BOM/BOMListesi' // redirect to another page
+                    }
+                }).fail(function (message) {
+                    window.location.href = '/BOM/BOMListesi'
+                });
+            }
+
+        }
+
+        function CTRL() {
+            var say = 1;
+            var ctrlNo = 0;
+            $("#table-recete > tbody").find('.input-qty').each(function () {
+                if ($(this).val() == "") {
+                    alert(say + ".sıra için miktar bilgisi giriniz.");
+                    ctrlNo = -1;
+
+                }
+                else
+                    ctrlNo = 1;
+                say++;
+            })
+
+            if (ctrlNo == 1)
+                return true;
+            else if (ctrlNo == -1)
+                return false;
+
+        }
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

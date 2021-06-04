@@ -1,0 +1,129 @@
+﻿@model StockControl.Models.TTedarikciBilgileri
+
+
+
+
+    <h2 style="text-align:left" class="alert alert-danger">
+        Silmek istediğinizden emin misiniz?
+
+    </h2>
+
+    <div>
+        <h4>Tedarikçi Bilgileri</h4>
+        <hr />
+        <div class="container">
+            <div class="form-row">
+                <div class="col-xs-5">
+                    <dl class="dl-horizontal">
+                        <dt>
+                            Şube No:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.SubeNo)
+                        </dd>
+                        <dt>
+                            Tedarikçi No:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.TedarikciNo)
+                        </dd>
+                        <dt>
+                            Tedarikçi Adı:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.TedarikciAdi)
+                        </dd>
+                        <dt>
+                            Vergi/Kimlik No:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.VTCKN)
+                        </dd>
+                        <dt>
+                            Banka Adı:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.BankaAdi)
+                        </dd>
+                        <dt>
+                            IBAN:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.IBAN)
+                        </dd>
+                        <dt>
+                            Ödeme Vadesi:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.Vade)
+                        </dd>
+                        <dt>
+                            Ödeme Şekli:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.OdemeSekli)
+                        </dd>
+                        <dt>
+                            Ülke:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.Ulke)
+                        </dd>
+                        <dt>
+                            Şehir:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.Sehir)
+                        </dd>
+                        <dt>
+                            Adres:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.Adres)
+                        </dd>
+                        <dt>
+                            Posta Kodu:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.PostaKodu)
+                        </dd>
+                        <dt>
+                            Tel No:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.TelNo)
+                        </dd>
+                        <dt>
+                            Email:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.Email)
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col-xs-3">
+                    <div>
+                        <label class="col-form-label">Kayıt Oluşturan:</label>
+                        @Html.DisplayFor(model => model.KayitKadi)
+                    </div>
+                    <div>
+                        <label class="col-form-label">Kayıt Değiştiren:</label>
+                        @Html.DisplayFor(model => model.DegKadi)
+                    </div>
+                    <div>
+                        <label class="col-form-label">Kayıt Tarihi:</label>
+                        @Html.DisplayFor(model => model.KayitTarihi)
+                    </div>
+                    <div>
+                        <label class="col-form-label">Değiştirme Tarihi:</label>
+                        @Html.DisplayFor(model => model.DegTarihi)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="TedarikciNo" />
+            <input type="submit" value="Sil" class="btn btn-danger" />
+            <a asp-action="TedarikçiListesi" class="btn btn-warning">Tedarikçi Listesi</a>
+        </form>
+    </div>

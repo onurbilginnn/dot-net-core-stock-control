@@ -1,0 +1,308 @@
+﻿@model StockControl.Models.TUrunListesi
+
+@using Microsoft.AspNetCore.Http
+<link rel="stylesheet" href="~/css/bootstrap-select.css" />
+
+<form asp-controller="Urun" asp-action="Create">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="container">
+        <div class="form-row">
+            <div class="col-xs-3">
+                <h4>Yeni Ürün Kayıt Formu</h4>
+            </div>
+            <div class="col-xs-2">
+
+                <label class="col-form-label">Şube No:</label>
+                <div>@Context.Session.GetString("SubeNo")</div>
+                <input asp-for="SubeNo" value="@Context.Session.GetString("SubeNo")" class="alert-danger form-control hide" readonly />
+            </div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Oluşturan:</label>
+                    <div>@Context.Session.GetString("User")</div>
+                    <input asp-for="KayitKadi" value="@Context.Session.GetString("User")" class="alert-danger form-control hide" readonly />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-5"> </div>
+        <div class="float-right">
+            <div class="col-xs-2">
+                <label class="col-form-label">Kayıt Tarihi:</label>
+                <div>@DateTime.Now.ToShortDateString()</div>
+                <input asp-for="KayitTarihi" class="alert-danger form-control hide" value="@DateTime.Now.ToShortDateString()" readonly />
+            </div>
+        </div>
+    </div><hr />
+    <input value="Create" name="edit" id="edit" hidden />
+
+    <div class="container">
+        <div class="form-row">
+            <div class="col-xs-3">
+                <label class="col-form-label">Ürün Adı:</label>
+                <input asp-for="UrunAdi" onblur="goToUpperCase()" class="form-control" />
+                <span asp-validation-for="UrunAdi" class="text-danger"></span>
+            </div>
+
+
+            <div class="float-right">
+                <div class="col-xs-3">
+                    <label class="col-form-label">Ürün No:</label>
+                    <div class="input-group">
+                        <input asp-for="UrunNo" class="alert-danger form-control" readonly />
+                        <span class="input-group-btn">
+                            <input class="btn btn-primary" id="findUrunNo" type="button"
+                                   value="Ürün No" style="margin-left:5px" onclick="findNo()">
+                        </span>
+                    </div>
+                    <span asp-validation-for="UrunNo" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <label class="col-form-label">Ürün Seviyesi:</label>
+                <select asp-for="UrunSeviyesi" class="selectpicker" title="Seçiniz...">
+                    <optgroup label="Üretim Malz.">
+                        <option>1 - Bitmiş Ürün</option>
+                        <option>2 - Ara Ürün</option>
+                        <option>3 - Hammadde</option>
+                    </optgroup>
+                    <optgroup label="Diğer Malz.">
+                        <option>4 - Paketleme Malz.</option>
+                        <option>5 - Tamir,bakım,diğer</option>
+                        <option>6 - Demirbaşlar</option>
+                        <option>7 - Züccaciye(Tabak,bardak vs)</option>
+
+                    </optgroup>
+                </select>
+                <span asp-validation-for="UrunSeviyesi" class="text-danger"></span>
+
+            </div>
+        </div>
+    </div><hr />
+
+    <div class="container">
+        <div class="col-xs-3">
+            <label class="control-label" id="label-UrunAltKategori">Alt Kategori:</label><br />
+            <select class="selectpicker" asp-for="UrunAltKategori"
+                    data-size="5" data-live-search="true" data-dropup-auto="false" title="Seçiniz..." onchange="findKategori()"></select>
+
+            <span asp-validation-for="UrunAltKategori" class="text-danger"></span>
+        </div>
+        <div class="col-xs-3">
+            <label class="col-form-label">Kategori:</label>
+            <input asp-for="UrunKategori" class="alert-danger form-control" readonly />
+        </div>
+
+    </div><hr />
+
+    <div class="container">
+        <div class="col-xs-3">
+            <label class="col-form-label">Miktar Birimi:</label>
+            <select class="selectpicker" data-dropup-auto="false" data-size="5"
+                    data-live-search="true" title="Seçiniz..." asp-for="MiktarBirimi">
+                <optgroup label="Sayı Birimi">
+                    <option>Adet</option>
+                    <option>Porsiyon</option>
+                    <option>Paket</option>
+                    <option>Koli</option>
+                </optgroup>
+                <optgroup label="Ağırlık Birimi">
+                    <option>kg</option>
+                    <option>gram</option>
+                    <option>mg</option>
+                </optgroup>
+                <optgroup label="Sıvı Ağırlık Birimi">
+                    <option>litre</option>
+                    <option>cl</option>
+                    <option>ml</option>
+                </optgroup>
+            </select>
+            <span asp-validation-for="MiktarBirimi" class="text-danger"></span>
+        </div>
+
+        <div class="col-xs-3">
+            <label class="col-form-label">KDV Oranı %:</label>
+            <select class="selectpicker" title="Seçiniz..." asp-for="KdvOrani">
+                <option>1</option>
+                <option>8</option>
+                <option>18</option>
+            </select>
+            <span asp-validation-for="KdvOrani" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="col-xs-3">
+        </div>
+        <div class="col-xs-3" style="text-align:right">
+
+            <input type="submit" value="Kaydet" class="btn btn-primary w-75 text-right" style="margin-top:15px" />
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-3">
+        </div>
+        <div class="col-xs-3" style="text-align:right">
+            <a asp-controller="Urun" asp-action="UrunListesi" class="btn btn-warning" style="margin-top:15px">Ürün Listesi</a>
+        </div>
+    </div>
+</form>
+
+
+
+@section Scripts
+    {
+    <script src="~/js/bootstrap-select.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script type="text/javascript">
+        var altKatNo = 0;
+        var katNo = 0;
+        var sonucNo1 = "";
+        var sonucNo2 = "";
+        var urunSeviyesi = "";
+        var sonucNo3 = "";
+        var katlist = [];
+
+        function array() {
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "GET",
+                url: "/Urun/GetKategoriList",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+
+            }).done(function (data) {
+                katList = JSON.parse(data);
+                for (var i = 0; i < katList.length; i++) {
+                    switch (katList[i].AltKategori) {
+                        case "2 - Ara Ürün":
+                        case "3 - Hammadde":
+                        case "1 - Bitmiş Ürün":
+                        case "4 - Paketleme Malz.":
+                        case "5 - Tamir,bakım,diğer":
+                        case "6 - Demirbaşlar":
+                        case "7 - Züccaciye(Tabak,bardak vs)":
+                            $('#UrunAltKategori').append('<option class="hidden">' + katList[i].AltKategori + '</option>').selectpicker('refresh');
+                            break;
+                        default:
+                            $('#UrunAltKategori').append('<option>' + katList[i].AltKategori + '</option>').selectpicker('refresh');
+                            break;
+                    }
+                }
+            });
+
+        }
+
+        function findKategori() {
+            clearUrunNo();
+            clearKategori();
+            var key = $('#UrunAltKategori :selected').val();
+
+            var sonucKat = "";
+            for (var i = 0; i < katList.length; i++) {
+                if (katList[i].AltKategori == key) {
+                    sonucKat += katList[i].Kategori;
+                    altKatNo = katList[i].AltKategoriNo;
+                    katNo = katList[i].KategoriNo;
+                }
+            }
+            $('#UrunKategori').val(sonucKat);
+
+        }
+
+        window.onload(array());
+    </script>
+    <script src="~/Urun/UrunEkle.js"></script>
+    <script>
+        $("#UrunSeviyesi").change(function () {
+            clearUrunNo();
+            var urunSeviye = $('#UrunSeviyesi :selected').val();
+
+            if (urunSeviye != "3 - Hammadde") {
+                $('#label-UrunAltKategori').addClass('hidden');
+                $('#UrunAltKategori').val(urunSeviye).selectpicker('hide').selectpicker('refresh');
+            }
+            else {
+                $('#label-UrunAltKategori').removeClass('hidden');
+                $('#UrunAltKategori').val("").selectpicker('show').selectpicker('refresh');
+
+            }
+            findKategori();
+        });
+        function clearUrunNo() {
+
+            $('#UrunNo').val("");
+        }
+        function findNo() {
+
+            clearUrunNo();
+            sonucNo1 = $('#SubeNo').val();
+            sonucNo2 = katNo.toString() + altKatNo.toString();
+            urunSeviyesi = $('#UrunSeviyesi :selected').val();
+            urunSeviyesi = parseInt(urunSeviyesi.substr(0, 1));
+            sonucNo3 = (urunSeviyesi * 10000);
+
+            $.post("/Urun/CountUrunNo", {
+
+            })
+
+            if (sonucNo2.length != 4) {
+                for (var i = 0; i < 5 - sonucNo2.length; i++) {
+                    sonucNo2 += 0;
+                }
+            }
+
+            if (sonucNo1 != "" && $('#UrunKategori').val() != "")
+                $('#UrunNo').val(sonucNo1 + "-" + sonucNo2 + "-" + sonucNo3);
+            else if (sonucNo1 == "") {
+                $('#UrunNo').val("");
+                window.alert("Şube No seçiniz!!!");
+            }
+            else if ($('#UrunSeviyesi :selected').val() == "") {
+                $('#UrunNo').val("");
+                window.alert("Ürün Seviyesi seçiniz!!!");
+            }
+            else if ($('#UrunKategori').val() == "") {
+                $('#UrunNo').val("");
+                window.alert("Alt Kategori seçiniz!!!");
+            }
+            var ajaxPOST = $('#UrunNo').val();
+            if (ajaxPOST != "") {
+                var data = {};
+                data.UrunNo = ajaxPOST;
+
+                $.ajax({
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    type: "POST",
+                    url: "/Urun/CountUrunNo",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(data),
+                    dataType: "json"
+                }).done(function (data) {
+                    //Successfully pass to server and get response
+                    sonucNo3 += data;
+                    $('#UrunNo').val(sonucNo1 + "-" + sonucNo2 + "-" + sonucNo3);
+                }).fail(function (response) {
+                    if (response.status != 0) {
+                        alert(response.status + " " + response.statusText);
+                    }
+                });
+            }
+        }
+
+    </script>
+
+
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

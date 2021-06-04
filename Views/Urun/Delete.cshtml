@@ -1,0 +1,85 @@
+﻿@model StockControl.Models.TUrunListesi
+
+
+
+    <h2 style="text-align:left" class="alert alert-danger">
+        Silmek istediğinizden emin misiniz?
+
+    </h2>
+    <div>
+        <h4>Ürün Bilgileri</h4>
+        <hr />
+        <div class="container">
+            <div class="form-row">
+                <div class="col-xs-4">
+                    <dl class="dl-horizontal">
+                        <dt>
+                            Ürün No:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.UrunNo)
+                        </dd>
+                        <dt>
+                            Ürün adı:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.UrunAdi)
+                        </dd>
+                        <dt>
+                            Ürün Kategorisi:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.UrunKategori)
+                        </dd>
+                        <dt>
+                            Ürün Alt Kategori:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.UrunAltKategori)
+                        </dd>
+                        <dt>
+                            Miktar Birimi:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.MiktarBirimi)
+                        </dd>
+                        <dt>
+                            KDV Oranı:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.KdvOrani)
+                        </dd>
+                        <dt>
+                            Ürün Seviyesi:
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.UrunSeviyesi)
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col-xs-3">
+                    <div>
+                        <label class="col-form-label">Kayıt Oluşturan:</label>
+                        @Html.DisplayFor(model => model.KayitKadi)
+                    </div>
+                    <div>
+                        <label class="col-form-label">Kayıt Değiştiren:</label>
+                        @Html.DisplayFor(model => model.DegKadi)
+                    </div>
+                    <div>
+                        <label class="col-form-label">Kayıt Tarihi:</label>
+                        @Html.DisplayFor(model => model.KayitTarihi)
+                    </div>
+                    <div>
+                        <label class="col-form-label">Değiştirme Tarihi:</label>
+                        @Html.DisplayFor(model => model.DegTarihi)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="UrunNo" />
+            <input type="submit" value="Sil" class="btn btn-danger" />
+            <a asp-controller="Urun" asp-action="UrunListesi" class="btn btn-warning">Ürün Listesi</a>
+        </form>
+    </div>

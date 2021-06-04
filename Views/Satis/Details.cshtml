@@ -1,0 +1,274 @@
+﻿@model IEnumerable<StockControl.Models.TSatis>
+
+@using System.Globalization;
+
+    <h2>Satış Detaylar</h2><hr />
+                           <form >
+                               <div id="div-onLoad" class="hide">1</div>
+                               <div class="container">
+
+                                   <div class="col-xs-3" style="margin-top:15px">
+                                       <div>
+                                           <label class="col-form-label">Kayıt Oluşturan:</label>
+                                           @Html.DisplayFor(model => model.ElementAt(0).KayitKadi)
+                                       </div>
+                                       <div>
+                                           <label class="col-form-label">Kayıt Değiştiren:</label>
+                                           @Html.DisplayFor(model => model.ElementAt(0).DegKadi)
+                                       </div>
+                                       <div>
+                                           <label class="col-form-label">Kayıt Tarihi:</label>
+                                           @Html.DisplayFor(model => model.ElementAt(0).KayitTarihi)
+                                       </div>
+                                       <div>
+                                           <label class="col-form-label">Değiştirme Tarihi:</label>
+                                           @Html.DisplayFor(model => model.ElementAt(0).DegTarihi)
+                                       </div>
+                                   </div>
+                                   <div class="col-xs-3" style="margin-top:15px">
+                                       <div>
+                                           <label class="col-form-label">Şube No:</label>
+                                           @Html.DisplayFor(model => model.ElementAt(0).SubeNo)
+                                       </div>
+                                       <div>
+                                           <label class="col-form-label">Satış No:</label>
+                                           @Html.DisplayFor(model => model.ElementAt(0).SatisNo)
+                                       </div>
+                                       <div>
+                                           <label class="col-form-label">Satış Tarihi:</label>
+                                           @Html.DisplayFor(model => model.ElementAt(0).SatisTarihi)
+                                       </div>
+                                   </div>
+                               </div>
+
+                               <hr />
+                        
+                               <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                               <div class="container">
+                                   <table class="table" id="table-satis">
+                                       <thead>
+                                           <tr>
+                                               <th></th>
+                                               <th>Ürün Adı</th>
+                                               <th>Ürün No</th>
+                                               <th class="col-xs-1">Miktar</th>
+                                               <th>Miktar Birimi</th>
+                                               <th>Ürün Seviyesi</th>
+                                               <th>Bağ. Ürün Seviyesi</th>
+                                           </tr>
+                                       </thead>
+                                       <tbody>
+                                           @{var loadBitUrunNo = "";
+                                               var loadBitUrunAdi = "";
+                                               var loadAraUrunNo = "";
+                                               decimal loadBitUrunAdet = 0;
+                                               decimal loadAraUrunAdet = 0;
+                                               decimal loadAraUrunBrAdet = 0;
+                                               decimal loadBitHammaddeBrAdet = 0;
+                                               decimal loadAraHammaddeBrAdet = 0;
+                                           }
+                                           @foreach (var item in Model)
+                                           {
+                                               @if (item.UrunSeviyesi == "1 - Bitmiş Ürün")
+                                               {
+                                                   loadBitUrunNo = item.UrunNo;
+                                                   loadBitUrunAdi = item.UrunAdi;
+                                                   loadBitUrunAdet = item.SatisAdet;
+                                                   <tr class="@item.UrunNo tr-bitUrun">
+                                                       <td class='td-delete'></td>
+                                                       <td style='padding-top:10px' class='td-entityUrunAdi'><div class='btn btn-default glyphicon-plus div-expand' onclick='ExpandRow(this,@item.SatisAdet)'></div>@item.UrunAdi</td>
+                                                       <td style='padding-top:15px' class="td-entityUrunNo">@item.UrunNo</td>
+                                                       <td style='padding-top:15px' class='td-entityUrunMik'><div>@Convert.ToDecimal(item.SatisAdet).ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</div></td>
+                                                       <td style='padding-top:15px' class="td-loadUrunMikBr"></td>
+                                                       <td style='padding-top:15px' class='td-entityUrunSev'>@item.UrunSeviyesi</td>
+                                                       <td style='padding-top:15px' class='td-entityBagUrunSev'>@item.BagUrunSeviyesi</td>
+                                                   </tr>
+                                               }
+                                               else if (item.UrunSeviyesi == "2 - Ara Ürün")
+                                               {
+                                                   loadAraUrunBrAdet = Convert.ToDecimal(item.SatisAdet) / Convert.ToDecimal(loadBitUrunAdet);
+                                                   loadAraUrunAdet = item.SatisAdet;
+                                                   loadAraUrunNo = item.UrunNo;
+                                                   <tr class='collapse out bg-warning small tr-@loadBitUrunAdi-bitUrunAlti @loadBitUrunNo' id='tr-@loadBitUrunAdi@item.UrunNo'>
+                                                       <td class='td-delete'></td>
+                                                       <td style='padding-top:10px' class='td-entityUrunAdi'><div class='btn btn-default glyphicon-plus div-araExpand' id='@loadBitUrunNo' onclick='ExpandAraUrunRow(this)'></div>@item.UrunAdi</td>
+                                                       <td style='padding-top:15px' class='td-araUrunNo td-entityUrunNo'>@item.UrunNo</td>
+                                                       <td style='padding-top:15px' class='td-@loadBitUrunNo-miktar td-entityUrunMik'>@item.SatisAdet.ToString("0.00", new CultureInfo("en-US")).Replace("$", "") (@loadAraUrunBrAdet/br)</td>
+                                                       <td style='padding-top:15px' class="td-loadUrunMikBr"></td>
+                                                       <td style='padding-top:15px' class='td-entityUrunSev'>@item.UrunSeviyesi</td>
+                                                       <td style='padding-top:15px' class='td-entityBagUrunSev'>@item.BagUrunSeviyesi</td>
+                                                   </tr>
+                                               }
+                                               else
+                                               {
+                                                   @if (item.BagUrunSeviyesi == "1 - Bitmiş Ürün")
+                                                   {
+                                                       loadBitHammaddeBrAdet = Convert.ToDecimal(item.SatisAdet) / Convert.ToDecimal(loadBitUrunAdet);
+                                                       <tr class="collapse tr-hammadde out bg-warning small tr-@loadBitUrunAdi-bitUrunAlti @loadBitUrunNo">
+                                                           <td class='td-delete'></td>
+                                                           <td style='padding-top:15px' class='td-entityUrunAdi'>@item.UrunAdi</td>
+                                                           <td style='padding-top:15px' class='td-entityUrunNo'>@item.UrunNo</td>
+                                                           <td style='padding-top:15px' class='td-@loadBitUrunNo-miktar td-entityUrunMik'>@item.SatisAdet.ToString("0.00", new CultureInfo("en-US")).Replace("$", "") (@loadBitHammaddeBrAdet/br)</td>
+                                                           <td style='padding-top:15px' class="td-loadUrunMikBr"></td>
+                                                           <td style='padding-top:15px' class='td-entityUrunSev'>@item.UrunSeviyesi</td>
+                                                           <td style='padding-top:15px' class='td-entityBagUrunSev'>@item.BagUrunSeviyesi</td>
+                                                       </tr>
+                                                   }
+                                                   else
+                                                   {
+                                                       if (Convert.ToInt32(loadAraUrunAdet) != 0)
+                                                       {
+                                                           loadAraHammaddeBrAdet = Convert.ToDecimal(item.SatisAdet) / Convert.ToDecimal(loadAraUrunAdet);
+                                                       }
+                                                       <tr class='collapse out small bg-danger tr-@loadBitUrunNo@loadAraUrunNo tr-@loadBitUrunNo-enAltUrun @loadBitUrunNo'>
+                                                           <td></td>
+                                                           <td class='td-entityUrunAdi'>@item.UrunAdi</td>
+                                                           <td class='td-entityUrunNo'>@item.UrunNo</td>
+                                                           <td class='td-@loadBitUrunNo-enAltMiktar td-entityUrunMik'>@item.SatisAdet.ToString("0.00", new CultureInfo("en-US")).Replace("$", "") (@loadAraHammaddeBrAdet/br)</td>
+                                                           <td class="td-loadUrunMikBr"></td>
+                                                           <td class='td-entityUrunSev'>@item.UrunSeviyesi</td>
+                                                           <td style='padding-top:15px' class='td-entityBagUrunSev'>@item.BagUrunSeviyesi</td>
+                                                       </tr>
+
+                                                   }
+                                               }
+
+                                           }
+                                       </tbody>
+                                   </table>
+                               </div>
+
+                               <div class="container">
+                                   <div class="col-xs-1">
+                                       <a asp-action="Edit" asp-route-id="@Model.ElementAt(0).SatisNo" class="btn btn-success">Düzenle</a>
+                                   </div>
+                                   <div class="col-xs-1">
+                                       <a asp-action="SatisListesi" class="btn btn-warning">Satış Listesi</a>
+                                   </div>
+                               </div>
+                           </form>
+
+    <link rel="stylesheet" href="~/css/bootstrap-select.css" />
+    @section Scripts {
+        <script src="~/js/bootstrap-select.js"></script>
+        <script>
+            function onLoad() {
+                var loadUrunList = [];
+                    var loadUrunNo = "";
+                    var loadMiktarBr = "";
+                    $.ajax({
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        type: "GET",
+                        url: "/Satis/GetUrunDBBilgileri",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+
+                    }).done(function (data) {
+                        loadUrunList = JSON.parse(data);
+                        $('.td-loadUrunMikBr').each(function () {
+                            loadUrunNo = $(this).prev().prev().text();
+                            for (var i = 0; i <loadUrunList.length; i++) {
+                                if (loadUrunList[i].UrunNo == loadUrunNo) {
+                                    loadMiktarBr = loadUrunList[i].MiktarBirimi;
+                                }
+                            }
+                            $(this).text(loadMiktarBr);
+                        });
+
+                        });
+
+
+
+            }//onLoad
+            function ExpandRow(e, x) {
+                    var adet = parseFloat(x);
+                    var urunAdi = $(e).parent().text();//bitmiş ürün adı
+                    var bitUrunNo = $(e).parent().next().text();
+
+
+                    if ($(e).hasClass('btn-default')) {
+                        $(e).removeClass('btn-default');
+                        $(e).addClass('btn-danger');
+                        $(e).removeClass('glyphicon-plus');
+                        $(e).addClass('glyphicon-minus');
+                    }
+                    else {
+                        $(e).addClass('btn-default');
+                        $(e).removeClass('btn-danger');
+                        $(e).addClass('glyphicon-plus');
+                        $(e).removeClass('glyphicon-minus');
+
+                    }
+
+                    if ($(".tr-" + urunAdi + "-bitUrunAlti").hasClass("out")) {
+                        $(".tr-" + urunAdi + "-bitUrunAlti").addClass("in");
+                        $(".tr-" + urunAdi + "-bitUrunAlti").removeClass("out");
+                    } else {
+                        $(".tr-" + urunAdi + "-bitUrunAlti").addClass("out");
+                        $(".tr-" + urunAdi + "-bitUrunAlti").removeClass("in");
+                    }
+
+
+
+                    $(".tr-" + urunAdi + "-bitUrunAlti").each(function () {
+                        var bitAltAltUrunList = [];
+                        var araUrunNo = $(this).find('.td-entityUrunNo').text();
+                        var araAdetArr = [];
+                        var araAdetString = $(this).find('.td-entityUrunMik').text();
+                            araAdetArr = araAdetString.split(" ");
+                        var araAdet = parseFloat(araAdetArr[0]);                        
+
+                    });
+
+                   $(".tr-" + bitUrunNo + "-enAltUrun").each(function () {
+                        if ($(this).hasClass('in')) {
+                            $(this).addClass("out");
+                            $(this).removeClass("in");
+
+                        }
+                    });
+
+                    $(".tr-" + urunAdi + "-bitUrunAlti").find('.glyphicon-minus').each(function () {
+                        if ($(this).hasClass('glyphicon-minus')) {
+                            $(this).addClass("glyphicon-plus");
+                            $(this).removeClass("glyphicon-minus");
+                            $(this).addClass('btn-default');
+                            $(this).removeClass('btn-danger');
+                        }
+                    });
+
+                }
+
+                function ExpandAraUrunRow(e) {
+                    var bitUrunNo = $(e).attr('id');
+                    var araUrunNo = $(e).parent().next().text();
+                    if ($(e).hasClass('btn-default')) {
+                        $(e).removeClass('btn-default');
+                        $(e).addClass('btn-danger');
+                        $(e).removeClass('glyphicon-plus');
+                        $(e).addClass('glyphicon-minus');
+                    }
+                    else {
+                        $(e).addClass('btn-default');
+                        $(e).removeClass('btn-danger');
+                        $(e).addClass('glyphicon-plus');
+                        $(e).removeClass('glyphicon-minus');
+
+                    }
+
+                    if ($(e).parent().parent().nextAll(".tr-" + bitUrunNo + araUrunNo+"").hasClass("out")) {
+                        $(e).parent().parent().nextAll(".tr-" + bitUrunNo + araUrunNo+"").addClass("in");
+                        $(e).parent().parent().nextAll(".tr-" + bitUrunNo + araUrunNo+"").removeClass("out");
+                    } else {
+                        $(e).parent().parent().nextAll(".tr-" + bitUrunNo + araUrunNo+"").addClass("out");
+                        $(e).parent().parent().nextAll(".tr-" + bitUrunNo + araUrunNo+"").removeClass("in");
+                    }
+                }           
+            window.onload(onLoad());
+        </script>
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }
+

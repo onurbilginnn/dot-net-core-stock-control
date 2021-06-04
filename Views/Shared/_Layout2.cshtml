@@ -1,0 +1,398 @@
+﻿
+@using Microsoft.AspNetCore.Http
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+
+    <title>Üretim Kontrol Sistemi</title>
+
+    <environment include="Development">
+        <style>
+            #return-to-top {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgb(0, 0, 0);
+                background: rgba(0, 0, 0, 0.7);
+                width: 50px;
+                height: 50px;
+                display: block;
+                text-decoration: none;
+                -webkit-border-radius: 35px;
+                -moz-border-radius: 35px;
+                border-radius: 35px;
+                display: none;
+                -webkit-transition: all 0.3s linear;
+                -moz-transition: all 0.3s ease;
+                -ms-transition: all 0.3s ease;
+                -o-transition: all 0.3s ease;
+                transition: all 0.3s ease;
+            }
+
+                #return-to-top i {
+                    color: #fff;
+                    margin: 0;
+                    position: relative;
+                    left: 16px;
+                    top: 13px;
+                    font-size: 19px;
+                    -webkit-transition: all 0.3s ease;
+                    -moz-transition: all 0.3s ease;
+                    -ms-transition: all 0.3s ease;
+                    -o-transition: all 0.3s ease;
+                    transition: all 0.3s ease;
+                }
+
+                #return-to-top:hover {
+                    background: rgba(0, 0, 0, 0.9);
+                }
+
+                    #return-to-top:hover i {
+                        color: #fff;
+                        top: 5px;
+                    }
+
+
+            /* Extra Things */
+            body {
+                background: #eee;
+                font-family: 'Open Sans', sans-serif;
+            }
+
+            h3 {
+                font-size: 30px;
+                font-weight: 400;
+                text-align: center;
+                margin-top: 50px;
+            }
+
+                h3 i {
+                    color: #444;
+                }
+        </style>
+        <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" href="~/lib/bootstrap3/dist/css/bootstrap.min.css">
+
+        <!-- Our Custom CSS -->
+        <link rel="stylesheet" href="~/lib/bootstrap3/dist/css/bootstrap-nav.css">
+    </environment>
+    <environment exclude="Development">
+        <style>
+            #return-to-top {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgb(0, 0, 0);
+                background: rgba(0, 0, 0, 0.7);
+                width: 50px;
+                height: 50px;
+                display: block;
+                text-decoration: none;
+                -webkit-border-radius: 35px;
+                -moz-border-radius: 35px;
+                border-radius: 35px;
+                display: none;
+                -webkit-transition: all 0.3s linear;
+                -moz-transition: all 0.3s ease;
+                -ms-transition: all 0.3s ease;
+                -o-transition: all 0.3s ease;
+                transition: all 0.3s ease;
+            }
+
+                #return-to-top i {
+                    color: #fff;
+                    margin: 0;
+                    position: relative;
+                    left: 16px;
+                    top: 13px;
+                    font-size: 19px;
+                    -webkit-transition: all 0.3s ease;
+                    -moz-transition: all 0.3s ease;
+                    -ms-transition: all 0.3s ease;
+                    -o-transition: all 0.3s ease;
+                    transition: all 0.3s ease;
+                }
+
+                #return-to-top:hover {
+                    background: rgba(0, 0, 0, 0.9);
+                }
+
+                    #return-to-top:hover i {
+                        color: #fff;
+                        top: 5px;
+                    }
+
+
+            /* Extra Things */
+            body {
+                background: #eee;
+                font-family: 'Open Sans', sans-serif;
+            }
+
+            h3 {
+                font-size: 30px;
+                font-weight: 400;
+                text-align: center;
+                margin-top: 50px;
+            }
+
+                h3 i {
+                    color: #444;
+                }
+        </style>
+        <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" href="~/lib/bootstrap3/dist/css/bootstrap.min.css">
+
+        <!-- Our Custom CSS -->
+        <link rel="stylesheet" href="~/lib/bootstrap3/dist/css/bootstrap-nav.css">
+    </environment>
+</head>
+<body>
+    <div class="wrapper">
+
+        <nav id="sidebar" class="active" style="z-index:99">
+            <div class="sidebar-header">
+                <button type="button" id="sidebarCollapse" class="navbar-btn" style="background-color:transparent;">
+                    <i class="glyphicon glyphicon-align-justify"></i>
+                </button>
+                <h3><a asp-area="" asp-controller="Home" asp-action="Index">WHITE MILL</a></h3>
+                <strong><a asp-area="" asp-controller="Home" asp-action="Index">WM</a></strong>
+            </div><br />
+            <div class="col-xs-1"></div>
+
+            <ul class="list-unstyled components">
+
+
+                <li>
+                    <a asp-fragment="TedarikciMenu" data-toggle="collapse" aria-expanded="false">
+                        <i class="glyphicon glyphicon-road"></i>
+                        Tedarikçiler
+                    </a>
+                    <ul class="collapse list-unstyled" id="TedarikciMenu">
+                        <li><a asp-area="" asp-controller="Tedarikci" asp-action="Create">Yeni Tedarikçi Kaydı</a></li>
+                        <li><a asp-area="" asp-controller="Tedarikci" asp-action="TedarikçiListesi">Tedarikçi Listesi</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a asp-fragment="UrunlerMenu" data-toggle="collapse" aria-expanded="false">
+                        <i class="glyphicon glyphicon-list-alt"></i>
+                        Ürünler
+                    </a>
+                    <ul class="collapse list-unstyled" id="UrunlerMenu">
+                        <li><a asp-area="" asp-controller="Urun" asp-action="Create">Yeni Ürün Kaydı</a></li>
+                        <li><a asp-area="" asp-controller="Urun" asp-action="UrunListesi">Ürün Listesi</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a asp-fragment="SAFaturalarMenu" data-toggle="collapse" aria-expanded="false">
+                        <i class="glyphicon glyphicon-shopping-cart"></i>
+                        Satın Alma Faturaları
+                    </a>
+                    <ul class="collapse list-unstyled" id="SAFaturalarMenu">
+                        <li><a asp-area="" asp-controller="FaturaGiris" asp-action="Create">Satın Alma Fatura Kaydı</a></li>
+                        <li><a asp-area="" asp-controller="FaturaGiris" asp-action="FaturaListesi">Satın Alma Fatura Listesi</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a asp-fragment="ReceteMenu" data-toggle="collapse" aria-expanded="false">
+                        <i class="glyphicon glyphicon-th-list"></i>
+                        Reçeteler
+                    </a>
+                    <ul class="collapse list-unstyled" id="ReceteMenu">
+                        <li><a asp-area="" asp-controller="BOM" asp-action="BOMEkle">Yeni Reçete Oluşturma</a></li>
+                        <li><a asp-area="" asp-controller="BOM" asp-action="BOMListesi">Reçete Listesi</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a asp-fragment="SatisMenu" data-toggle="collapse" aria-expanded="false">
+                        <i class="glyphicon glyphicon-usd"></i>
+                        Satışlar
+                    </a>
+                    <ul class="collapse list-unstyled" id="SatisMenu">
+                        <li><a asp-area="" asp-controller="Satis" asp-action="Create">Satış Giriş</a></li>
+                        <li><a asp-area="" asp-controller="Satis" asp-action="SatisListesi">Satış Listesi</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a asp-fragment="StokMenu" data-toggle="collapse" aria-expanded="false">
+                        <i class="glyphicon glyphicon-signal"></i>
+                        Stok Raporu
+                    </a>
+                    <ul class="collapse list-unstyled" id="StokMenu">
+                        <li><a asp-area="" asp-controller="StokSayim" asp-action="StokRaporuGiris">Periyodik Stok Sayımı</a></li>
+                        <li><a asp-area="" asp-controller="StokSayim" asp-action="StokYilSayimListesi">Yıllık Stok Sayım Listesi</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" id="logoutForm">
+                        <div class="col-xs-8"></div>
+                        <button type="submit" id="button-exit" class="btn btn-default ">Çıkış</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+        <div class="container">
+            <nav class="navbar navbar-default navbar-fixed-top" style="z-index:98">
+                <!-- Brand and toggle get grouped for better mobile display -->
+
+                <div class="navbar-header navbar-right">
+
+                    <a asp-controller="Home" asp-action="Index" class="navbar-brand" style="margin-top:-30px"> <img src="~/images/white_mill_LOGO.jpg" alt="WM" width="110" height="60" /></a>
+                </div>
+                <!-- Collection of nav links, forms, and other content for toggling -->
+                <div class="col-xs-2 " style="width:250px"></div>
+                <div>
+                    <div><b> K.Adı: @Context.Session.GetString("User")</b></div>
+                </div>
+                <div class="col-xs-2" style="width:250px"></div>
+                <div>
+                    <div id="div-sube"><b>Şube: @Context.Session.GetString("Sube")</b></div>
+                </div>
+            </nav>
+            <div class="row" style="margin-top:80px"></div>
+            @RenderBody()
+            <!--Ekleme Alanı-->
+            <hr />
+            <footer>
+                <p>&copy; @DateTime.Now.Year - MAS<span class="pull-right">mathartsoft@yahoo.com</span></p>
+            </footer>
+            <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+            <a href="javascript:" id="return-to-top"><i class="icon-chevron-up"></i></a>
+        </div>
+    </div>
+   
+    <environment include="Development">
+        <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+        <!-- Bootstrap Js CDN -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+        <script type="text/javascript">
+
+            $(document).ready(function (e) {
+                $('#sidebarCollapse').on('click', function () {
+                    $('#sidebar').toggleClass('active');
+                });
+                window.history.pushState(null, "", window.location.href);
+                window.onpopstate = function () {
+                    window.history.pushState(null, "", window.location.href);
+                };
+                $(document).keydown(function (e) {
+                    return (e.which || e.keyCode) != 116;
+                });
+                $(document).keydown(function (e) {
+                    return (e.which || e.keyCode) != 123;
+                });
+                document.onkeydown = function (e) {
+                    if (e.ctrlKey &&
+                        (
+                            e.keyCode === 85 ||
+                            e.keyCode === 117)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                };
+                var SealoffSource = true; /* to disable the right mouse button, so the source can not been seen. */
+                function click() { if (event.button == 2) { alert('Giriş Yasak!!!') } }
+                document.onmousedown = click;
+            });
+
+        </script>
+        <script>
+            // ===== Scroll to Top ====
+            $(window).scroll(function () {
+                if ($(this).scrollTop() >= 50) {        // If page is scrolled more than 50px
+                    $('#return-to-top').fadeIn(200);    // Fade in the arrow
+                } else {
+                    $('#return-to-top').fadeOut(200);   // Else fade out the arrow
+                }
+            });
+            $('#return-to-top').click(function () {      // When arrow is clicked
+                $('body,html').animate({
+                    scrollTop: 0                       // Scroll to top of body
+                }, 500);
+            });
+
+
+        </script>
+
+    </environment>
+    <environment exclude="Development">
+        <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+        <!-- Bootstrap Js CDN -->
+        
+
+        <script type="text/javascript">
+
+            $(document).ready(function (e) {
+                $('#sidebarCollapse').on('click', function () {
+                    $('#sidebar').toggleClass('active');
+                });
+                window.history.pushState(null, "", window.location.href);
+                window.onpopstate = function () {
+                    window.history.pushState(null, "", window.location.href);
+                };
+                $(document).keydown(function (e) {
+                    return (e.which || e.keyCode) != 116;
+                });
+                $(document).keydown(function (e) {
+                    return (e.which || e.keyCode) != 123;
+                });
+                document.onkeydown = function (e) {
+                    if (e.ctrlKey &&
+                        (
+                            e.keyCode === 85 ||
+                            e.keyCode === 117)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                };
+                var SealoffSource = true; /* to disable the right mouse button, so the source can not been seen. */
+                function click() { if (event.button == 2) { alert('Giriş Yasak!!!') } }
+                document.onmousedown = click;
+            });
+
+        </script>
+        <script>
+            // ===== Scroll to Top ====
+            $(window).scroll(function () {
+                if ($(this).scrollTop() >= 50) {        // If page is scrolled more than 50px
+                    $('#return-to-top').fadeIn(200);    // Fade in the arrow
+                } else {
+                    $('#return-to-top').fadeOut(200);   // Else fade out the arrow
+                }
+            });
+            $('#return-to-top').click(function () {      // When arrow is clicked
+                $('body,html').animate({
+                    scrollTop: 0                       // Scroll to top of body
+                }, 500);
+            });
+
+
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                crossorigin="anonymous"
+                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
+        </script>
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
+
+    </environment>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

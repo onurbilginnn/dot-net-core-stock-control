@@ -1,0 +1,472 @@
+﻿@model StockControl.Models.TTedarikciBilgileri
+
+@using Microsoft.AspNetCore.Http
+
+
+<form asp-action="Edit">
+    <div class="container">
+        <div class="form-row">
+            <div class="col-xs-3">
+                <h4>Tedarikçi Güncelleme</h4>
+            </div>
+            <div class="col-xs-2">
+
+                <label class="col-form-label">Şube No:</label>
+                <div>@Context.Session.GetString("SubeNo")</div>
+                <input asp-for="SubeNo" value="@Context.Session.GetString("SubeNo")" class="alert-danger form-control hide" readonly />
+            </div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Oluşturan:</label>
+                    <div>@Model.KayitKadi</div>
+                    <input asp-for="KayitKadi" class="alert-danger form-control hide" readonly />
+                </div>
+            </div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Değiştiren:</label>
+                    <div>@Context.Session.GetString("User")</div>
+                    <input asp-for="DegKadi" value="@Context.Session.GetString("User")" class="alert-danger form-control hide" readonly />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-5"></div>
+        <div class="float-right">
+            <div class="col-xs-2">
+                <label class="col-form-label">Kayıt Tarihi:</label>
+                <div>@Model.KayitTarihi</div>
+                <input asp-for="KayitTarihi" class="alert-danger form-control hide" readonly />
+
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Değiştirme Tarihi:</label>
+                <div>@DateTime.Now</div>
+                <input asp-for="DegTarihi" value="@DateTime.Now" class="alert-danger form-control hide" readonly />
+            </div>
+        </div>
+    </div>
+    <hr />
+
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="container">
+        <div class="form-row">
+
+            <div class="col-xs-3">
+                <label class="col-form-label">Tedarikçi No:</label>
+                <input asp-for="TedarikciNo" class="form-control alert-danger" readonly />
+                <span asp-validation-for="TedarikciNo" class="text-danger"></span>
+            </div>
+
+        </div>
+
+    </div><hr />
+    <div class="container">
+
+        <div class="col-xs-5">
+            <label class="col-form-label">Tedarikçi Adı:</label>
+            <input asp-for="TedarikciAdi" onblur="goToUpperCase(this)" class="form-control" />
+            <span asp-validation-for="TedarikciAdi" class="text-danger"></span>
+        </div>
+
+
+        <div class="float-right">
+            <div class="col-xs-2">
+                <label class="col-form-label">Vergi/TC Kimlik No:</label>
+                <input asp-for="VTCKN" class=" form-control" />
+                <span asp-validation-for="VTCKN" class="text-danger"></span>
+            </div>
+        </div>
+
+    </div>
+    <div class="container">
+
+        <div class="col-xs-3">
+            <label class="col-form-label">Banka Adı:</label>
+            <input asp-for="BankaAdi" onblur="goToUpperCase(this)" class="form-control" />
+            <span asp-validation-for="BankaAdi" class="text-danger"></span>
+        </div>
+
+        <div class="col-xs-4">
+            <label class="col-form-label">IBAN:</label>
+
+            <input asp-for="IBAN" class=" form-control" onblur="goToUpperCase(this)" />
+            <span asp-validation-for="IBAN" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-2">
+
+            <label class="col-form-label">Ödeme Vadesi (Ay):</label>
+            <input asp-for="Vade" class="form-control" />
+            <span asp-validation-for="Vade" class="text-danger"></span>
+        </div>
+        <div class="col-xs-1"></div>
+        <div class="col-xs-2">
+            <label class="col-form-label">Ödeme Şekli:</label>
+            <select asp-for="OdemeSekli" class="form-control">
+                <option value="KrediKart">Kredi Kartı</option>
+                <option value="Nakit">Nakit</option>
+                <option value="Cek">Çek</option>
+                <option value="Havale">Havale</option>
+            </select>
+
+        </div>
+    </div>
+    <hr />
+    <div class="container">
+        <div class="col-xs-3">
+            <label class="col-form-label">Ülke:</label>
+            <select class="form-control" asp-for="Ulke" onchange="findNo()">
+                <option>ABD +1</option>
+                <option>Afganistan +93</option>
+                <option>Almanya +49</option>
+                <option>Amerikan Samoa +684</option>
+                <option>Andorra +376</option>
+                <option>Angola +244</option>
+                <option>Anguilla +1264</option>
+                <option>Antigua +1268</option>
+                <option>Arjantin +54</option>
+                <option>Arnavutluk +355</option>
+                <option>Aruba +297</option>
+                <option>Asension +247</option>
+                <option>Avustralya +61</option>
+                <option>Avusturya +43</option>
+                <option>Azerbaycan +994</option>
+                <option>Azor Mader Ada. +351</option>
+                <option>BAE +971</option>
+                <option>Bahama +1242</option>
+                <option>Bahreyn +973</option>
+                <option>Bangladeş +880</option>
+                <option>Barbados +1246</option>
+                <option>Batı Samoa +685</option>
+                <option>Belçika +32</option>
+                <option>Belize +501</option>
+                <option>Benin +229</option>
+                <option>Bermuda +1441</option>
+                <option>Beyaz Rusya +375</option>
+                <option>Bolivya +591</option>
+                <option>Bosna Hersek +387</option>
+                <option>Botsvana +267</option>
+                <option>Burma +95</option>
+                <option>Burundi +257</option>
+                <option>Butan +975</option>
+                <option>Cad +235</option>
+                <option>Cebelitarık +350</option>
+                <option>Çek Cumhuriyeti +420</option>
+                <option>Cezayir +213</option>
+                <option>Cibuti +253</option>
+                <option>Çin +86</option>
+                <option>Cook Adası +682</option>
+                <option>Danimarka +45</option>
+                <option>Diego Garsia +246</option>
+                <option>Dominik +1767</option>
+                <option>Dominik Cumh. +1809</option>
+                <option>Ekvator +593</option>
+                <option>Ekvator Gine +240</option>
+                <option>El Salvador +503</option>
+                <option>Endonezya +62</option>
+                <option>Erıtre +291</option>
+                <option>Ermenistan +374</option>
+                <option>Estonya +372</option>
+                <option>Etiyopya +251</option>
+                <option>Falkland Adaları +500</option>
+                <option>Faroe Adaları +298</option>
+                <option>Fas +212</option>
+                <option>Fiji +679</option>
+                <option>Fildişi Sahili +225</option>
+                <option>Filipinler +63</option>
+                <option>Finlandiya +358</option>
+                <option>Fransa +33</option>
+                <option>Fransız Guyanası +594</option>
+                <option>Fransız Polenazyası +689</option>
+                <option>Gabon +241</option>
+                <option>Gambia +220</option>
+                <option>Gana +233</option>
+                <option>Gine +224</option>
+                <option>Gine Bissau +245</option>
+                <option>Grenada +1473</option>
+                <option>Grönland +299</option>
+                <option>Guadalup +590</option>
+                <option>Guam +1671</option>
+                <option>Guatemala +502</option>
+                <option>Güney Afrika Cumh. +27</option>
+                <option>Güney Kore +82</option>
+                <option>Gürcistan +995</option>
+                <option>Güyana +592</option>
+                <option>Haiti +509</option>
+                <option>Hindistan +91</option>
+                <option>Hırvatistan +385</option>
+                <option>Hollanda +31</option>
+                <option>Hollanda Antilleri +599</option>
+                <option>Honduras +504</option>
+                <option>Hongkong +852</option>
+                <option>Irak +964</option>
+                <option>İngiltere +44</option>
+                <option>İran +98</option>
+                <option>İrlanda +353</option>
+                <option>İspanya +34</option>
+                <option>İsrail +972</option>
+                <option>İsveç +46</option>
+                <option>İsviçre +41</option>
+                <option>İtalya +39</option>
+                <option>İzlanda +354</option>
+                <option>Jamaika +1876</option>
+                <option>Japonya +81</option>
+                <option>Kamboçya +855</option>
+                <option>Kamerun +237</option>
+                <option>Kanada +1</option>
+                <option>Kap Verd +238</option>
+                <option>Katar +974</option>
+                <option>Kayman Adaları +1345</option>
+                <option>Kazakistan +7</option>
+                <option>Kenya +254</option>
+                <option>Kıbrıs +357</option>
+                <option>Kırgızistan +996</option>
+                <option>Kırıbatı +686</option>
+                <option>Kolombiya +57</option>
+                <option>Komor Adaları +269</option>
+                <option>Kongo +242</option>
+                <option>Kosta Rika +506</option>
+                <option>Küba +53</option>
+                <option>Kuveyt +965</option>
+                <option>Kuzey Kore +850</option>
+                <option>Lao Dem. Halk C.. +856</option>
+                <option>Lesotho +266</option>
+                <option>Letonya +371</option>
+                <option>Liberya +231</option>
+                <option>Libya +218</option>
+                <option>Lihtenstayn +41</option>
+                <option>Litvanya +370</option>
+                <option>Lübnan +961</option>
+                <option>Lüksemburg +352</option>
+                <option>Macaristan +36</option>
+                <option>Makao +853</option>
+                <option>Makedonya +389</option>
+                <option>Malavi +265</option>
+                <option>Maldiv Adaları +960</option>
+                <option>Malezya +60</option>
+                <option>Mali +223</option>
+                <option>Malta +356</option>
+                <option>Mariyan Adaları +1670</option>
+                <option>Malsar Adaları +692</option>
+                <option>Martinik +596</option>
+                <option>Meksika +52</option>
+                <option>Mrkz Afrika Cumh. +236</option>
+                <option>Mikronezya +691</option>
+                <option>Mısır +20</option>
+                <option>Moğolistan +976</option>
+                <option>Moldovya +373</option>
+                <option>Monaco +377</option>
+                <option>Montserrat +1664</option>
+                <option>Moris Adaları +230</option>
+                <option>Moritanya +222</option>
+                <option>Mozambik +258</option>
+                <option>Nakhodka +7504915</option>
+                <option>Nakhodka +750492</option>
+                <option>Namibya +264</option>
+                <option>Nauru Adası +674</option>
+                <option>Nepal +977</option>
+                <option>Nijer +227</option>
+                <option>Nijerya +234</option>
+                <option>Nikaragua +505</option>
+                <option>Niue Adaları +683</option>
+                <option>Norfolk Adaları +672</option>
+                <option>Norveç +47</option>
+                <option>Özbekistan +998</option>
+                <option>Pakistan +92</option>
+                <option>Palau +680</option>
+                <option>Panama +507</option>
+                <option>Papua Yeni Gine +675</option>
+                <option>Paraguay +595</option>
+                <option>Peru +51</option>
+                <option>Polonya +48</option>
+                <option>Portekiz +351</option>
+                <option>Porto Riko +1787</option>
+                <option>Radius +750996</option>
+                <option>Reunyon +262</option>
+                <option>Romanya +40</option>
+                <option>Ruanda +250</option>
+                <option>Rusya +7</option>
+                <option>Sakhalin +750440</option>
+                <option>Sakhalin +7504416</option>
+                <option>Sakhalin +750442</option>
+                <option>Sakhalin +750443</option>
+                <option>San Marıno +378</option>
+                <option>Sao Tome Princ. +239</option>
+                <option>Senegal +221</option>
+                <option>Seysel +248</option>
+                <option>Sierra Leone +232</option>
+                <option>Tili +56</option>
+                <option>Singapur +65</option>
+                <option>Slovak Cumhuriyeti +421</option>
+                <option>Slovenya +386</option>
+                <option>Solomon Adaları +677</option>
+                <option>Somali +252</option>
+                <option>Sri Lanka +94</option>
+                <option>St.Helena +290</option>
+                <option>St.Kittis & Nevis +1869</option>
+                <option>St.Lucia +1758</option>
+                <option>St.Marten +5995</option>
+                <option>St.Piyer & Mikelon +508</option>
+                <option>St.Vincent Grenada +1784</option>
+                <option>Sudan +249</option>
+                <option>Surinam +597</option>
+                <option>Suriye +963</option>
+                <option>Suudi Arabistan +966</option>
+                <option>Svaziland +268</option>
+                <option>Tacikistan +7</option>
+                <option>Tanzanya +255</option>
+                <option>Tataristan +7843</option>
+                <option>Tatincom +7513</option>
+                <option>Tayland +66</option>
+                <option>Tayvan +886</option>
+                <option>Togo +228</option>
+                <option>Tokelan +690</option>
+                <option>Tonga +676</option>
+                <option>Trinidad & Tobago +1868</option>
+                <option>Tunus +216</option>
+                <option selected="selected">Türkiye +90</option>
+                <option>Türkmenistan +993</option>
+                <option>Turks & Caicos Ad.ı +1649</option>
+                <option>Tuvalu +688</option>
+                <option>U.S. Virgin Adası +1340</option>
+                <option>Uganda +256</option>
+                <option>Ukrayna +380</option>
+                <option>Umman +968</option>
+                <option>Uraguay +598</option>
+                <option>Ürdün +962</option>
+                <option>Vallis Fununa Ada. +681</option>
+                <option>Venezuela +58</option>
+                <option>Vietnam +84</option>
+                <option>Yemen Arap Cumh. +967</option>
+                <option>Yemen Halk Cumh. +969</option>
+                <option>Yeni Hebritler +678</option>
+                <option>Yeni Kaledonya +687</option>
+                <option>Yeni Zelenda +64</option>
+                <option>Yugoslavya +381</option>
+                <option>Yunanistan +30</option>
+                <option>Zaire +243</option>
+                <option>Zambiya +260</option>
+                <option>Zanzibar +259</option>
+                <option>Zimbabve +263</option>
+            </select>
+        </div>
+        <div class="col-xs-3">
+            <label class="control-label">Şehir:</label>
+            <input asp-for="Sehir" class="form-control" />
+            <span asp-validation-for="Sehir" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="col-xs-6">
+            <label class="col-form-label">Adres:</label>
+            <textarea asp-for="Adres" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Adres" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-6">
+            <label class="col-form-label">Email:</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-3">
+            <label class="col-form-label">Tel No:</label>
+            <input asp-for="TelNo" class="form-control" maxlength="13" />
+            <span asp-validation-for="TelNo" class="text-danger"></span>
+        </div>
+        <div class="col-xs-3">
+            <label class="col-form-label">Posta Kodu:</label>
+            <input asp-for="PostaKodu" class="form-control" />
+            <span asp-validation-for="PostaKodu" class="text-danger"></span>
+        </div>
+    </div><hr />
+    <div class="container">
+        <div class="col-xs-3">
+        </div>
+        <div class="col-xs-3" style="text-align:right">
+            <input type="submit" value="Kaydet" class="btn btn-primary w-75 text-right" style="margin-top:15px" />
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-xs-3">
+        </div>
+        <div class="col-xs-3" style="text-align:right">
+            <a asp-controller="Tedarikci" asp-action="TedarikçiListesi" class="btn btn-warning" style="margin-top:15px">Tedarikçi Listesi</a>
+        </div>
+    </div>
+</form>
+
+
+
+<script src="~/js/jquery1_11_3.min.js"></script>
+
+<script src="~/js/IBANMask.js"></script>
+<script>
+
+        function onload() {
+            $("#TelNo").keyup(function () {
+                $(this).val($(this).val().replace(/^(\d{3})(\d{3})(\d)+$/, "($1)$2-$3"));
+            });
+
+            $("#TelNo").keydown(function (e) {
+                var key = e.charCode || e.keyCode || 0;
+                // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                // home, end, period, and numpad decimal
+                return (
+                    key == 8 ||
+                    key == 9 ||
+                    key == 13 ||
+                    key == 46 ||
+                    key == 190 ||
+                    (key >= 35 && key <= 40) ||
+                    (key >= 48 && key <= 57) ||
+                    (key >= 96 && key <= 105));
+            });
+            $("#PostaKodu").keydown(function (e) {
+                var key = e.charCode || e.keyCode || 0;
+                // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                // home, end, period, and numpad decimal
+                return (
+                    key == 8 ||
+                    key == 9 ||
+                    key == 13 ||
+                    key == 46 ||
+                    key == 190 ||
+                    (key >= 35 && key <= 40) ||
+                    (key >= 48 && key <= 57) ||
+                    (key >= 96 && key <= 105));
+            });
+            $("#Vade").keydown(function (e) {
+                var key = e.charCode || e.keyCode || 0;
+                // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                // home, end, period, and numpad decimal
+                return (
+                    key == 8 ||
+                    key == 9 ||
+                    key == 13 ||
+                    key == 46 ||
+                    key == 190 ||
+                    (key >= 35 && key <= 40) ||
+                    (key >= 48 && key <= 57) ||
+                    (key >= 96 && key <= 105));
+            });
+            $('#IBAN').mask('SS00 0000 0000 0000 0000 00', {
+                placeholder: '____ ____ ____ ____ ____ __'
+            });
+            var odemeSekli = '@Model.OdemeSekli';
+
+            $('#OdemeSekli').find('[value=' + odemeSekli + ']').attr('selected', 'selected');;
+
+        }
+        window.onload(onload());
+        function goToUpperCase(x) {
+            $(x).val($(x).val().toUpperCase());
+        }
+</script>

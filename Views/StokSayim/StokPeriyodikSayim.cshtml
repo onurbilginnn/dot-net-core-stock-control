@@ -1,0 +1,210 @@
+﻿@model StockControl.ViewModels.PeriyodikStokSayimViewModel
+
+@using StockControl.Models
+
+@using Microsoft.AspNetCore.Http
+@using System.Globalization;
+@using Sakura.AspNetCore;
+
+<div class="container">
+    <div class="col-xs-6"></div>
+    <div class="col-xs-3"></div>
+    <div class="float-right">
+        <div class="col-xs-3"><div id="div-stokSayimTarihi" class="float-right"><b>Kayıt Tarihi:</b> @DateTime.Now</div></div>
+    </div>
+
+
+</div>
+<div class="container">
+    <div class="col-xs-6"></div>
+    <div class="col-xs-3"></div>
+    <div class="float-right">
+        <div class="col-xs-3">
+            <div id="div-subeNo"><b>Şube No: </b>@Context.Session.GetString("SubeNo")</div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="col-xs-6"></div>
+    <div class="col-xs-3"></div>
+    <div class="float-right">
+        <div class="col-xs-3">
+            <div id="div-kayitOlusturan"><b>Kayıt Oluşturan: </b>@Context.Session.GetString("User")</div>
+        </div>
+    </div>
+</div><br />
+
+
+<div class="container">
+    <div class="col-xs-12 pull-right">
+        <div id="div-kaydet" class="btn btn-primary w-75 text-right pull-right hide" style="margin-bottom:10px" onclick="CreateEntity()">Kaydet</div>
+
+        <div id="div-excel" class="btn btn-success w-75 text-right pull-right" style="margin-bottom:10px;margin-right:5px" onclick="Excel()">Excel Oluştur</div>
+    </div>
+</div>
+<form>
+   
+    <h4 class="col-xs-12 bg-primary text-center">Periyodik Hammadde Stok Sayım</h4>
+    <table class="table table-bordered" id="table-periyodikStokSayim">
+        <thead>
+            <tr>
+                <th colspan="4" class="text-center bg-success"><b>Başlangıç Tarihi: </b>@ViewBag.BasTarihi</th>
+                <th colspan="6" class="text-center bg-success"><b>Bitiş Tarihi: </b>@ViewBag.BitTarihi</th>
+            </tr>
+            <tr>
+                <th>Ürün No</th>
+                <th>Ürün Adı</th>
+                <th>Açılış</th>
+                <th>Giriş</th>
+                <th>Çıkış(-)</th>
+                <th>Düzeltme</th>
+                <th>Bakiye</th>
+                <th class="td-fiiliSayim">Fiili Sayım</th>
+                <th class="td-fark">Fark</th>
+                <th>Br.</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model.UrunList)
+            {
+                var acilisAdedi = Model.YillikSayim.Where(x => x.UrunNo == item.UrunNo).Sum(y => y.FiiliSayim) + Model.StokDuzAcilis.Where(x => x.UrunNo == item.UrunNo).Sum(y => y.DuzAdedi)
+                        + Model.FaturaListAcilis.Where(x => x.UrunNo == item.UrunNo).Sum(y => y.UrunMiktari) - Model.SatisListAcilis.Where(x => x.UrunNo == item.UrunNo).Sum(y => y.SatisAdet);
+
+                <tr>
+                    <td class="td-urunNo">@item.UrunNo</td>
+                    <td class="td-urunAdi">@item.UrunAdi</td>
+                    <td class="td-acilis">@acilisAdedi.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="td-giris">@Model.FaturaListGiris.Where(x => x.UrunNo == item.UrunNo).Sum(y => y.UrunMiktari).ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="td-cikis">@Model.SatisListCikis.Where(x => x.UrunNo == item.UrunNo).Sum(y => y.SatisAdet).ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="td-duzeltme">@Model.StokDuzAra.Where(x => x.UrunNo == item.UrunNo).Sum(y => y.DuzAdedi).ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="td-bakiye"></td>
+                    <td class="col-xs-1 td-fiiliSayim"><input class="form-control input-duzeltme" onchange="CalcSonuc(this)" /><div class="hide"></div></td>
+                    <td class="td-fark">0</td>
+                    <td class="td-br">@item.MiktarBirimi</td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+
+</form>
+<pager source="@Model.UrunList" />
+
+@section Scripts {
+    <script src="~/js/table2excel.js"></script>
+
+    <script>
+        function onLoad() {
+            var acilis = "";
+            var giris = "";
+            var cikis = "";
+            var duzeltme = "";
+            var sonuc = 0;
+            $('.td-bakiye').each(function () {
+                acilis = $(this).prevAll('.td-acilis').text();
+                giris = $(this).prevAll('.td-giris').text();
+                cikis = $(this).prevAll('.td-cikis').text();
+                duzeltme = $(this).prevAll('.td-duzeltme').text();
+                $(this).next().find('input').val();
+                sonuc = parseFloat(acilis) + parseFloat(giris) - parseFloat(cikis) + parseFloat(duzeltme);
+                sonuc = parseFloat(sonuc).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                $(this).text(sonuc);
+                $(this).next().find('input').val(sonuc);
+            });
+
+        }
+        window.onload(onLoad());
+
+        function CalcSonuc(e) {
+            var kalan = $(e).parent().prev().text();
+            var fiiliSonuc = parseFloat($(e).val());
+            var sonuc = 0;
+            sonuc = fiiliSonuc - parseFloat(kalan);
+            sonuc = parseFloat(sonuc).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+            $(e).parent().next().text(sonuc);
+            $(e).css("background","yellow");
+            $('.td-fark').each(function () {
+                if (parseFloat($(this).text()) < 0) {
+                    $(this).addClass("bg-danger text-center");
+
+                }
+                if ($(this).text() != 0) {
+                    $('#div-kaydet').removeClass('hide');
+
+                }
+
+            });
+        }
+        function Excel() {
+
+            $("#table-periyodikStokSayim").table2excel({
+                exclude: ".td-fark",
+                name: "Periyodik_Stok_Sayim",
+                filename: "Periyodik_Stok_Sayim",
+                fileext: ".xls",
+
+            });
+
+        }
+        function CreateEntity() {
+
+            var UrunNo = "";
+            var UrunAdi = "";
+            var DuzAdedi = 0;
+            var DuzTarihi = "";
+            var DuzKadi = "";
+            var SubeNo = "";
+            var KayitTarihi = "";
+            var jsonArr = {};
+            var jsonArrTotal = [];
+
+            $(".td-urunNo").each(function () {
+                UrunNo = $(this).text();
+                UrunAdi = $(this).nextAll('.td-urunAdi').text();
+                DuzAdedi = $(this).nextAll('.td-fark').text();
+                DuzTarihi = '@ViewBag.BitTarihi';
+                DuzKadi = '@Context.Session.GetString("User")';
+                SubeNo = '@Context.Session.GetString("SubeNo")';
+                KayitTarihi = '@DateTime.Now';
+
+                if (DuzAdedi != 0) {
+                    jsonArr.UrunNo = UrunNo;
+                    jsonArr.UrunAdi = UrunAdi;
+                    jsonArr.DuzAdedi = DuzAdedi;
+                    jsonArr.DuzTarihi = DuzTarihi.toString();
+                    jsonArr.SubeNo = SubeNo.toString();
+                    jsonArr.KayitTarihi = KayitTarihi.toString();
+                    jsonArr.DuzKadi = DuzKadi.toString();
+
+                    jsonArrTotal.push(jsonArr);
+
+                    jsonArr = {};
+                }
+            });
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "POST",
+                url: "/StokSayim/StokPeriyodikSayim",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonArrTotal),
+                dataType: "text",
+
+            }).done(function (message) {
+
+
+                })
+            $('.td-fiiliSayim').find('input').each(function () {
+                $(this).prop('disabled', true);
+            });
+            $('#div-kaydet').addClass('hide');
+            alert("Veri kaydedildi...");
+        }
+    </script>
+}
+
+

@@ -1,0 +1,16 @@
+﻿@using Microsoft.AspNetCore.Identity
+
+
+@inject SignInManager<StockControl.Areas.Identity.Data.StockControlUser> SignInManager
+@inject UserManager<StockControl.Areas.Identity.Data.StockControlUser> UserManager
+
+  @if (UserManager.GetUserName(User) == "admin")
+    {
+        Layout = "_Layout";
+
+    }
+    else
+    {
+        Layout = "_Layout2";
+
+    }

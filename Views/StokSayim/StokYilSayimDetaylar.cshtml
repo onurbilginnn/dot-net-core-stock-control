@@ -1,0 +1,84 @@
+﻿@model StockControl.ViewModels.StokSayimViewModel
+
+@using StockControl.Models
+
+@using Microsoft.AspNetCore.Http
+@using System.Globalization;
+@using Sakura.AspNetCore;
+
+<div class="container">
+    <div class="col-xs-6"></div>
+    <div class="col-xs-3"></div>
+    <div class="float-right">
+        <div class="col-xs-3"><div id="div-stokSayimTarihi" class="float-right"><b>Tarih:</b> @Model.YillikSayim.ElementAt(0).KayitTarihi</div></div>
+    </div>
+
+</div>
+<div class="container">
+    <div class="col-xs-6"></div>
+    <div class="col-xs-3"></div>
+    <div class="float-right">
+        <div class="col-xs-3">
+            <div id="div-subeNo"><b>Şube No: </b>@Model.YillikSayim.ElementAt(0).SubeNo</div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="col-xs-6"></div>
+    <div class="col-xs-3"></div>
+    <div class="float-right">
+        <div class="col-xs-3">
+            <div id="div-kayitOlusturan"><b>Kayıt Oluşturan: </b>@Model.YillikSayim.ElementAt(0).KayitKadi</div>
+        </div>
+    </div>
+</div><br />
+
+
+
+<form>
+    <h4 class="col-xs-12 bg-primary text-center">Yıllık Hammadde Stok Sayım - @Model.YillikSayim.ElementAt(0).StokDonemiYil</h4>
+    <table class="table table-bordered" id="table-yillikStokSayim">
+        <thead>
+            <tr>
+                <th>Ürün No</th>
+                <th>Ürün Adı</th>
+                <th>Açılış(@(Convert.ToInt32(Model.YillikSayim.ElementAt(0).StokDonemiYil) - 1))</th>
+                <th>Giriş(@(Convert.ToInt32(Model.YillikSayim.ElementAt(0).StokDonemiYil) - 1))</th>
+                <th>Çıkış(-)(@(Convert.ToInt32(Model.YillikSayim.ElementAt(0).StokDonemiYil) - 1))</th>
+                <th>Düzeltme(@(Convert.ToInt32(Model.YillikSayim.ElementAt(0).StokDonemiYil) - 1))</th>
+                <th>@(Convert.ToInt32(Model.YillikSayim.ElementAt(0).StokDonemiYil) - 1) Sonu</th>
+                <th>Fiili Sayım(@Model.YillikSayim.ElementAt(0).StokDonemiYil)</th>
+                <th>Fark</th>
+                <th>Br.</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.YillikSayim)
+            {
+                <tr>
+                    <td class="td-urunNo">@item.UrunNo</td>
+                    <td class="td-urunAdi">@item.UrunAdi</td>
+                    <td class="td-acilis">@item.Acilis.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="td-giris">@item.Giris.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="td-cikis">@item.Cikis.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="td-duzeltme">@item.Duzeltme.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="td-bakiye">@item.Bakiye.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="col-xs-1 td-fiiliSayim">@item.FiiliSayim.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="td-fark">@item.Fark.ToString("0.00", new CultureInfo("en-US")).Replace("$", "")</td>
+                    <td class="td-br">@Model.UrunList.Where(x=>x.UrunNo==item.UrunNo).Select(y=>y.MiktarBirimi).FirstOrDefault()</td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+
+</form>
+<pager source="@Model.YillikSayim" />
+
+@section Scripts {
+   
+    
+}
+
+

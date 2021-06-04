@@ -1,0 +1,563 @@
+﻿@model IEnumerable<StockControl.Models.TBOM>
+
+@using Microsoft.AspNetCore.Http
+
+
+
+    <form asp-action="Create">
+        <div class="container">
+            <div class="form-row">
+                <div class="col-xs-3">
+                    <h4>Satış Giriş</h4>
+                </div>
+                <div class="col-xs-2">
+
+                    <label class="col-form-label">Şube No:</label>
+                    <div id="SubeNoEnter">@Context.Session.GetString("SubeNo")</div>
+                </div>
+                <div class="float-right">
+                    <div class="col-xs-2">
+                        <label class="col-form-label">Kayıt Oluşturan:</label>
+                        <div id="input-kayitOlusturan">@Context.Session.GetString("User")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="col-xs-5"></div>
+            <div class="float-right">
+                <div class="col-xs-2">
+                    <label class="col-form-label">Kayıt Tarihi:</label>
+                    <div>@DateTime.Now.ToShortDateString()</div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="container">
+            <div class="col-xs-2">
+                <label class="col-form-label">Satış No:</label>
+                <input class="form-control alert-danger" id="SatisNo" readonly>
+            </div>
+            <div class="col-xs-1"></div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Satış Tarihi:</label>
+                <input class="form-control" type="date" id="SatisTarihi">
+            </div>
+        </div>
+        <div class="container">
+            <div class="col-xs-3">
+                <label class="col-form-label">Ürün Adı:</label>
+                <select class="selectpicker" id="SatisUrunAdi" title="Seçiniz..." data-live-search="true">
+                    <option class="hide"></option>
+                    @foreach (var item in Model.Where(y => y.SubeNo.ToString() == Context.Session.GetString("SubeNo")).Select(x => x.BaglBitUrunAdi).Distinct())
+                    {
+                        <option>@item</option>
+                    }
+
+                </select>
+                <span class="text-danger" id="span-NihaiUrunAdi"></span>
+            </div>
+            <div class="col-xs-2">
+                <label class="col-form-label">Ürün Miktarı:</label>
+                <input class="form-control" id="SatisUrunMiktari">
+                <span class="text-danger" id="span-SatisUrunMiktari"></span>
+            </div>
+
+            <div class="col-xs-1">
+                <div id="div-ekleBtn" class="btn btn-success" style="margin-top:25px">Ekle</div>
+            </div>
+        </div>
+        <div class="container">
+            <table class="table" id="table-satis">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Ürün Adı</th>
+                        <th>Ürün No</th>
+                        <th class="col-xs-1">Miktar</th>
+                        <th>Miktar Birimi</th>
+                        <th>Ürün Seviyesi</th>
+                        <th>Bağ. Ürün Seviyesi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </form>
+    <div class="container">
+        <div class="col-xs-1">
+            <div class="btn btn-success w-75 text-right hide" id="div-onaylaBtn" style="margin-top:15px" onclick="bas(this)">Onayla</div>
+            <div class="btn btn-primary w-75 text-right hide" id="div-kaydetBtn" style="margin-top:15px" onclick="CreateEntity()">Kaydet</div>
+        </div>
+
+        <div>
+            <a asp-action="SatisListesi" class="btn btn-warning" style="margin-top:15px">Satış Listesi</a>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="~/css/bootstrap-select.css" />
+    @section Scripts {
+        <script src="~/js/bootstrap-select.js"></script>
+        <script>
+                function onLoad() {
+
+                    $("#SatisUrunMiktari").keydown(function (e) {
+                        var key = e.charCode || e.keyCode || 0;
+                        // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                        // home, end, period, and numpad decimal
+                        return (
+                            key == 8 ||
+                            key == 9 ||
+                            key == 13 ||
+                            key == 46 ||
+                            key == 190 ||
+                            (key >= 35 && key <= 40) ||
+                            (key >= 48 && key <= 57) ||
+                            (key >= 96 && key <= 105));
+                    });
+                    var subeNo = $('#SubeNoEnter').text();
+                    var satAdet = 0;
+                    $.ajax({
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        type: "GET",
+                        url: "/Satis/CountSatis",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                    }).done(function (data) {
+                        $("#SatisNo").val(subeNo + "-SAT-"+data);
+                    });
+                    var date = new Date();
+
+                    var day = date.getDate();
+                    var month = date.getMonth() + 1;
+                    var year = date.getFullYear();
+
+                    if (month < 10) month = "0" + month;
+                    if (day < 10) day = "0" + day;
+
+                    var today = year + "-" + month + "-" + day;
+                    $("#SatisTarihi").attr("value", today);
+
+                }
+                var urunSatir = 1;
+                $('#div-ekleBtn').click(function () {
+                    $('#div-onaylaBtn').removeClass('hide');
+                    var urunAdi = $('#SatisUrunAdi :selected').val();
+
+                    var bitUrunList = [];
+                    var bitAltUrunList = [];
+
+                    var urunMik = parseFloat($('#SatisUrunMiktari').val());
+                    if (clearAdd() == 1) {
+                        $('#SatisTarihi').prop('readonly', true);
+                        $('#SatisTarihi').addClass('alert-danger');
+                         //***Bitmiş Ürün Doldurma***
+                        $.ajax({
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            type: "POST",
+                            url: "/Satis/GetBitUrunBilgileri",
+                            data: JSON.stringify(urunAdi),
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+
+                        }).done(function (data) {
+                           bitUrunList = JSON.parse(data);
+                            $('#table-satis > tbody').append("<tr id='tr-" + urunSatir + "-bitmisUrun' class='" + bitUrunList[0].UrunNo+" tr-bitUrun'>" +
+                                "<td class='td-delete'><div class='btn btn-warning div-delete' id='tr-" + urunSatir +"-deleteBtn' onclick='deleteRow(this)'>Sil</div></td>"+
+                                "<td style='padding-top:10px' class='td-entityUrunAdi'><div class='btn btn-default glyphicon-plus div-expand' onclick='ExpandRow(this,"+urunMik+")'></div>" + bitUrunList[0].UrunAdi + "</td>" +
+                                "<td style='padding-top:15px' class='td-entityUrunNo'>" + bitUrunList[0].UrunNo + "</td>" +
+                                "<td style='padding-top:15px' class='td-entityUrunMik'><input class='form-control input-bitmisUrun' type='number' min='1'  onchange='CalcQty(this)' id='" + bitUrunList[0].UrunNo+"' value='" + urunMik + "'/></td>" +
+                                "<td style='padding-top:15px'>" + bitUrunList[0].MiktarBirimi + "</td>" +
+                                "<td style='padding-top:15px' class='td-entityUrunSev'>" + bitUrunList[0].UrunSeviyesi + "</td>" +
+                                "<td style='padding-top:15px' class='td-entityBagUrunSev'></td>" +
+                                "</tr>");
+                            //***Bitmiş Ürün Muhteviyatı Doldurma***
+                            $.ajax({
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                },
+                                type: "POST",
+                                url: "/Satis/GetAltUrunBilgileri",
+                                data: JSON.stringify(bitUrunList[0].UrunNo),
+                                contentType: "application/json; charset=utf-8",
+                                dataType: "json",
+
+                            }).done(function (data) {
+                                bitAltUrunList = JSON.parse(data);
+                                for (var i = 0; i < bitAltUrunList.length; i++) {
+                                    var BOMAdet = parseFloat(bitAltUrunList[i].FireliMiktar);
+                                    var araAdet = BOMAdet * urunMik;
+                                    BOMAdet = parseFloat(BOMAdet).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                                    araAdet = parseFloat(araAdet).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                                    if (bitAltUrunList[i].UrunSeviyesi == "2 - Ara Ürün") {
+                                        $('#table-satis > tbody').append("<tr class='collapse out bg-warning small tr-" + bitUrunList[0].UrunAdi + "-bitUrunAlti " + bitUrunList[0].UrunNo + "' id='tr-" + bitUrunList[0].UrunNo + bitAltUrunList[i].UrunNo +"'>" +
+                                            "<td class='td-delete'></td>" +
+                                            "<td style='padding-top:10px' class='td-entityUrunAdi'><div class='btn btn-default glyphicon-plus div-araExpand' id='" + bitUrunList[0].UrunNo+"' onclick='ExpandAraUrunRow(this)'></div>" + bitAltUrunList[i].UrunAdi + "</td>" +
+                                            "<td class='td-araUrunNo td-entityUrunNo' id='td-" + urunSatir +"' style='padding-top:15px'>" + bitAltUrunList[i].UrunNo + "</td>" +
+                                            "<td style='padding-top:15px' class='td-" + bitUrunList[0].UrunNo + "-miktar td-entityUrunMik'>" + araAdet + " (" + BOMAdet + "/br)" + "</td>" +
+                                            "<td style='padding-top:15px'>" + bitAltUrunList[i].MiktarBirimi + "</td>" +
+                                            "<td style='padding-top:15px' class='td-entityUrunSev'>" + bitAltUrunList[i].UrunSeviyesi + "</td>" +
+                                            "<td style='padding-top:15px' class='td-entityBagUrunSev'>1 - Bitmiş Ürün</td>" +
+                                            "</tr>"
+                                            );
+                                        urunSatir++;
+                                    }//if ara ürün
+                                    else {
+                                        $('#table-satis > tbody').append("<tr class='collapse tr-hammadde out bg-warning small tr-" + bitUrunList[0].UrunAdi + "-bitUrunAlti " + bitUrunList[0].UrunNo+"' id='tr-" + urunSatir +"-hammadde'>" +
+                                            "<td class='td-delete'></td>" +
+                                            "<td style='padding-top:15px' class='td-entityUrunAdi'>" + bitAltUrunList[i].UrunAdi + "</td>" +
+                                            "<td style='padding-top:15px' class='td-entityUrunNo'>" + bitAltUrunList[i].UrunNo + "</td>" +
+                                            "<td style='padding-top:15px' class='td-" + bitUrunList[0].UrunNo + "-miktar td-entityUrunMik'>" + araAdet + " (" + BOMAdet + "/br)" + "</td>" +
+                                            "<td style='padding-top:15px'>" + bitAltUrunList[i].MiktarBirimi + "</td>" +
+                                            "<td style='padding-top:15px' class='td-entityUrunSev'>" + bitAltUrunList[i].UrunSeviyesi + "</td>" +
+                                            "<td style='padding-top:15px' class='td-entityBagUrunSev'>1 - Bitmiş Ürün</td>" +
+                                            "</tr>");
+                                        urunSatir++;
+                                    }
+                                }
+                                });
+
+                            });//bit.ürün ajax
+                    }//if clearAdd==1
+                });
+
+                function clearAdd() {
+                    var urunAdi = $('#SatisUrunAdi :selected').val();
+                    var urunMik = $('#SatisUrunMiktari').val();
+
+                    if (urunAdi == "") {
+                        alert('Ürün Adı seçiniz...');
+                        return -1;
+                    }
+                    else if (urunMik == "") {
+                        alert('Ürün Miktarı giriniz...');
+                        return -1;
+                    }
+                    else {
+                        $('#SatisUrunAdi :selected').remove();
+                        $('#SatisUrunAdi').selectpicker('refresh');
+                        $('#SatisUrunAdi').selectpicker('val', "");
+                        $('#SatisUrunMiktari').val("");
+
+                        return 1;
+                    }
+                }
+
+                function ExpandRow(e, x) {
+                    var adet = parseFloat(x);
+                    var urunAdi = $(e).parent().text();//bitmiş ürün adı
+                    var bitUrunNo = $(e).parent().next().text();
+
+
+                    if ($(e).hasClass('btn-default')) {
+                        $(e).removeClass('btn-default');
+                        $(e).addClass('btn-danger');
+                        $(e).removeClass('glyphicon-plus');
+                        $(e).addClass('glyphicon-minus');
+                    }
+                    else {
+                        $(e).addClass('btn-default');
+                        $(e).removeClass('btn-danger');
+                        $(e).addClass('glyphicon-plus');
+                        $(e).removeClass('glyphicon-minus');
+
+                    }
+
+                    if ($(".tr-" + urunAdi + "-bitUrunAlti").hasClass("out")) {
+                        $(".tr-" + urunAdi + "-bitUrunAlti").addClass("in");
+                        $(".tr-" + urunAdi + "-bitUrunAlti").removeClass("out");
+                    } else {
+                        $(".tr-" + urunAdi + "-bitUrunAlti").addClass("out");
+                        $(".tr-" + urunAdi + "-bitUrunAlti").removeClass("in");
+                    }
+
+
+
+                    $(".tr-" + urunAdi + "-bitUrunAlti").each(function () {
+                        var bitAltAltUrunList = [];
+                        var araUrunNo = $(this).find('.td-entityUrunNo').text();
+                        var araAdetArr = [];
+                        var araAdetString = $(this).find('.td-entityUrunMik').text();
+                            araAdetArr = araAdetString.split(" ");
+                        var araAdet = parseFloat(araAdetArr[0]);
+                        var BOMAdet = 0;
+                        var enAltAdet = 0;
+                        if ($(".tr-" + bitUrunNo + araUrunNo + "").length==0) {
+                                $.ajax({
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    type: "POST",
+                                    url: "/Satis/GetAltAltUrunBilgileri",
+                                    data: JSON.stringify(araUrunNo),
+                                    contentType: "application/json; charset=utf-8",
+                                    dataType: "json",
+
+                                }).done(function (data) {
+                                    bitAltAltUrunList = JSON.parse(data);
+                                    for (var j = 0; j < bitAltAltUrunList.length; j++) {
+                                        BOMAdet = parseFloat(bitAltAltUrunList[j].FireliMiktar);
+                                        enAltAdet = araAdet * BOMAdet;
+                                        enAltAdet = parseFloat(enAltAdet).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                                        BOMAdet = parseFloat(BOMAdet).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+
+                                        $('#tr-' + bitUrunNo + araUrunNo).after("<tr class='collapse out small bg-danger tr-" + bitUrunNo + araUrunNo+" tr-"+bitUrunNo+"-enAltUrun " + bitUrunNo+"'>" +
+                                            "<td></td>" +
+                                            "<td class='td-entityUrunAdi'>" + bitAltAltUrunList[j].UrunAdi + "</td>" +
+                                            "<td class='td-entityUrunNo'>" + bitAltAltUrunList[j].UrunNo + "</td>" +
+                                            "<td class='td-" + bitUrunNo + araUrunNo + "-enAltMiktar td-entityUrunMik'>" + enAltAdet + " (" + BOMAdet + "/br)" + "</td>" +
+                                            "<td>" + bitAltAltUrunList[j].MiktarBirimi + "</td>" +
+                                            "<td class='td-entityUrunSev'>" + bitAltAltUrunList[j].UrunSeviyesi + "</td>" +
+                                            "<td style='padding-top:15px' class='td-entityBagUrunSev'>2 - Ara Ürün</td>" +
+                                            "</tr>");
+                                    }
+
+                                    });
+                            }
+
+                    });
+
+                   $(".tr-" + bitUrunNo + "-enAltUrun").each(function () {
+                        if ($(this).hasClass('in')) {
+                            $(this).addClass("out");
+                            $(this).removeClass("in");
+
+                        }
+                    });
+
+                    $(".tr-" + urunAdi + "-bitUrunAlti").find('.glyphicon-minus').each(function () {
+                        if ($(this).hasClass('glyphicon-minus')) {
+                            $(this).addClass("glyphicon-plus");
+                            $(this).removeClass("glyphicon-minus");
+                            $(this).addClass('btn-default');
+                            $(this).removeClass('btn-danger');
+                        }
+                    });
+
+                }
+
+                function ExpandAraUrunRow(e) {
+                    var bitUrunNo = $(e).attr('id');
+                    var araUrunNo = $(e).parent().next().text();
+                    if ($(e).hasClass('btn-default')) {
+                        $(e).removeClass('btn-default');
+                        $(e).addClass('btn-danger');
+                        $(e).removeClass('glyphicon-plus');
+                        $(e).addClass('glyphicon-minus');
+                    }
+                    else {
+                        $(e).addClass('btn-default');
+                        $(e).removeClass('btn-danger');
+                        $(e).addClass('glyphicon-plus');
+                        $(e).removeClass('glyphicon-minus');
+
+                    }
+
+                    if ($(e).parent().parent().nextAll(".tr-" + bitUrunNo + araUrunNo+"").hasClass("out")) {
+                        $(e).parent().parent().nextAll(".tr-" + bitUrunNo + araUrunNo+"").addClass("in");
+                        $(e).parent().parent().nextAll(".tr-" + bitUrunNo + araUrunNo+"").removeClass("out");
+                    } else {
+                        $(e).parent().parent().nextAll(".tr-" + bitUrunNo + araUrunNo+"").addClass("out");
+                        $(e).parent().parent().nextAll(".tr-" + bitUrunNo + araUrunNo+"").removeClass("in");
+                    }
+                }
+
+                function deleteRow(e) {
+
+                    var deleteClass = $(e).parent().next().next().text();
+                    var bitUrunAdi = $(e).parent().next().text();
+
+                    $("." + deleteClass).remove();
+                    $('#SatisUrunAdi').append("<option>" + bitUrunAdi + "</option>").selectpicker('refresh');
+                    if ($('#table-satis > tbody').find('tr').length == 0) {
+                        $('#div-onaylaBtn').addClass('hide');
+                        $('#div-kaydetBtn').addClass('hide');
+                    }
+
+                };
+                function CalcQty(e)
+                {
+                    var bitmisUrunNo=$(e).attr('id');
+                    var bitmisUrunQty = parseFloat($(e).val());
+
+                    $('.td-' + bitmisUrunNo + '-miktar').each(function () {
+                        var altUrunAdetString = $(this).text().split(' ');
+                        var altUrunAdet = "";
+                        for (var i = 0; i < altUrunAdetString[1].length; i++) {
+                            if ($.isNumeric(altUrunAdetString[1][i]) || altUrunAdetString[1][i]==".")
+                                altUrunAdet += altUrunAdetString[1][i];
+                        }
+                        var altUrunAdetSonuc = 0;
+                            altUrunAdet = parseFloat(altUrunAdet);
+                        altUrunAdetSonuc = altUrunAdet * bitmisUrunQty;
+                        altUrunAdetSonuc = parseFloat(altUrunAdetSonuc).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        altUrunAdet = parseFloat(altUrunAdet).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                        $(this).text(altUrunAdetSonuc + " (" + altUrunAdet + "/br)");
+                        if ($(this).next().next().text() == '2 - Ara Ürün') {
+                            var araUrunNosu = $(this).prev().text();
+
+                            $('.td-' + bitmisUrunNo + araUrunNosu+ '-enAltMiktar').each(function () {
+                                var enAltUrunAdetString = $(this).text().split(' ');
+                                var enAltUrunAdet = "";
+                                var araUrunAdet = "";
+                                for (var i = 0; i < enAltUrunAdetString[1].length; i++) {
+                                    if ($.isNumeric(enAltUrunAdetString[1][i]) || enAltUrunAdetString[1][i]==".")
+                                        enAltUrunAdet += enAltUrunAdetString[1][i];
+                                }
+                                var enAltSonuc = 0;
+                                enAltUrunAdet = parseFloat(enAltUrunAdet);
+                                enAltSonuc = enAltUrunAdet * altUrunAdetSonuc;
+                                enAltUrunAdet = parseFloat(enAltUrunAdet).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                                enAltSonuc = parseFloat(enAltSonuc).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                                $(this).text(enAltSonuc + " (" + enAltUrunAdet + "/br)")
+                            });
+                        }
+                        altUrunAdet = "";
+                    });
+                }
+                function BitmisUrunKapat() {
+                    $('.div-araExpand').each(function (){
+                        if ($(this).parent().parent().hasClass('in')) {
+                            $(this).parent().parent().addClass("out");
+                            $(this).parent().parent().removeClass("in");
+
+                        }
+                    });
+                    $('.tr-hammadde').each(function () {
+                        if ($(this).hasClass('in')) {
+                            $(this).addClass("out");
+                            $(this).removeClass("in");
+
+                        }
+                    });
+
+                    $('.tr-bitUrun').each(function () {
+                        $(this).find('.glyphicon-minus').addClass("glyphicon-plus");
+                        $(this).find('.glyphicon-minus').removeClass("glyphicon-minus");
+                        $(this).find('.glyphicon-plus').addClass("btn-default");
+                        $(this).find('.glyphicon-plus').removeClass("btn-danger");
+                    });
+
+                    $('.div-delete').each(function () {
+                        $(this).addClass('hide');
+                    });
+
+                    $('.input-bitmisUrun').each(function () {
+                        $(this).prop('disabled',true);
+                    });
+
+                }
+                function bas(e) {
+                    $('.td-entityUrunAdi').each(function () {
+                        if ($(this).find('div').hasClass('div-expand')) {
+                            $(this).find('div').trigger('onclick');
+                        }
+                    });
+
+                    $(e).hide();
+                    $('#div-kaydetBtn').removeClass('hide');
+                    $('#div-ekleBtn').addClass('hide');
+                    $('.selectpicker').prop('disabled', true).selectpicker('refresh');
+                    $('#SatisUrunMiktari').prop('disabled', true);
+                    BitmisUrunKapat();
+                }
+
+                function CreateEntity() {
+
+                        var satisNo = $('#SatisNo').val();
+                        var satisTarih = $('#SatisTarihi').val();
+                        var satUrunNo = "";
+                        var satUrunAdi = "";
+                        var satUrunSeviye = "";
+                        var satAdet = [];
+                        var kayitTarihi = '@DateTime.Now.ToShortDateString()';
+                        var kayitKadi = $('#input-kayitOlusturan').text();
+                    var subeNo = $('#SubeNoEnter').text();
+                    var bagUrunSeviye = "";
+                        var jsonArr = {};
+                        var jsonArrTotal = [];
+                        satisTarih = satisTarih.split('-').reverse().join('-');
+
+                        if (CTRL() != -1) {
+
+                            $('.td-entityUrunAdi').each(function () {
+                                satUrunNo = $(this).next().text();
+                                satUrunAdi = $(this).text();
+                                satUrunSeviye = $(this).nextAll('.td-entityUrunSev').text();
+                                if ($(this).nextAll('.td-entityUrunMik').text() == "") {
+                                    satAdet[0] = $(this).nextAll('.td-entityUrunMik').find('input').val();
+
+                                } else {
+                                    satAdet = $(this).nextAll('.td-entityUrunMik').text().split(" ");
+                                }
+                                bagUrunSeviye = $(this).nextAll('.td-entityBagUrunSev').text();
+
+                                jsonArr.SatisNo = satisNo;
+                                jsonArr.SatisTarihi = satisTarih;
+                                jsonArr.UrunAdi = satUrunAdi;
+                                jsonArr.UrunNo = satUrunNo;
+                                jsonArr.UrunSeviyesi = satUrunSeviye;
+                                jsonArr.SatisAdet = satAdet[0];
+                                jsonArr.KayitTarihi = kayitTarihi;
+                                jsonArr.SubeNo = subeNo;
+                                jsonArr.KayitKadi = kayitKadi;
+                                jsonArr.BagUrunSeviyesi = bagUrunSeviye;
+                                jsonArrTotal.push(jsonArr);
+                                jsonArr = {};
+
+                            });
+                            $.ajax({
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                },
+                                type: "POST",
+                                url: "/Satis/Create",
+                                contentType: "application/json; charset=utf-8",
+                                data: JSON.stringify(jsonArrTotal),
+                                dataType: "text",
+
+                            }).done(function (message) {
+                                if (message) {
+                                    $('#span-error').text(message); // display the error message in the span tag
+                                } else {
+                                    window.location.href = '/Satis/SatisListesi' // redirect to another page
+                                }
+                            }).fail(function (message) {
+                                window.location.href = '/Satis/SatisListesi'
+                            });
+
+                        }
+
+                }
+
+
+                function CTRL() {
+                    var say = 1;
+                    var CTRLSay = 0;
+                    $('.input-bitmisUrun').each(function () {
+                        if ($(this).val() < 1) {
+                            alert(say + '.sıra girilen miktar 0 veya daha küçük olamaz!!!');
+                            CTRLSay = -1;
+                        }
+                        say++;
+
+                    });
+                    if (CTRLSay != -1)
+                        bas();
+                    return CTRLSay;
+                }
+                window.onload(onLoad());
+        </script>
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }
+
